@@ -1,0 +1,33 @@
+<project name="teekesselchen" default="dist" basedir=".">
+	<description>
+        simple example build file
+    </description>
+	<property name="src" location="src"/>
+  	<property name="build" location="build"/>
+  	<property name="dist"  location="dist"/>
+  	<property name="plugin-dev" location="build/teekesselchen.lrdevplugin"/>
+    <property name="plugin-dist" location="dist/teekesselchen.lrplugin"/>
+    
+    <target name="init">
+    	<!-- Create the time stamp -->
+    	<tstamp/>
+    	<mkdir dir="${plugin-dev}"/>
+  	</target>
+  	
+  	<target name="build" depends="init" description="creates a development plugin folder" >
+    	<copy todir="${plugin-dev}">
+    		<fileset dir="src"/>
+  		</copy>
+  	</target>
+  	
+  	<target name="dist" depends="build" description="creates a plugin folder" >
+    	<copy todir="${plugin-dist}">
+    		<fileset dir="${plugin-dev}"/>
+  		</copy>
+  	</target>
+  
+	<target name="clean" description="clean up" >
+    	<delete dir="${build}"/>
+    	<delete dir="${dist}"/>
+  </target>
+</project>
