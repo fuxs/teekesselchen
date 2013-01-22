@@ -1,7 +1,7 @@
 --[[----------------------------------------------------------------------------
 
     Teekesselchen is a plugin for Adobe Lightroom that finds duplicates by metadata.
-    Copyright (C) 2012  Michael Bungenstock
+    Copyright (C) 2013  Michael Bungenstock
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,16 +29,10 @@ local LrDialogs = import "LrDialogs"
 local LrFunctionContext = import "LrFunctionContext"
 local LrView = import "LrView"
 local LrTasks = import "LrTasks"
-
 local LrHttp	 = import "LrHttp"
+
 require "Teekesselchen"
 require "Updater"
-
---local LrApplication = import "LrApplication"
-
-
-				
-
 
 local function updater(button)
 	LrDialogs.message("ja")
@@ -51,11 +45,7 @@ end
 
 local function showFindDuplicatesDialog()
 	LrTasks.startAsyncTask( function()
-		
-		
-		
 		LrFunctionContext.callWithContext("DoubletFinderDialog", function(context)
-			
 			local teekesselchen = Teekesselchen.new(context)
 			local f = LrView.osFactory()
 			local p = LrBinding.makePropertyTable(context)
@@ -79,14 +69,14 @@ local function showFindDuplicatesDialog()
 							},
 							f:static_text {
 								font = "<system/bold>",
-								title = ""-- .. teekesselchen.total,
+								title = "" .. teekesselchen.total,
 							},
 							f:static_text {
 								title = " photos.",
 							},
 						},
 						f:static_text {
-							title = "I DO NOT DELETE OR REMOVE ANY PHOTO!",
+							title = "I WILL NOT DELETE OR REMOVE ANY PHOTO!",
 						},
 						f:static_text {
 							title = "Duplicates are marked with the keyword:",
@@ -140,7 +130,6 @@ local function showFindDuplicatesDialog()
 							},
 						},
 				},
-				
 				-- 2nd tab
 				f:tab_view_item {
 					title = "Marks",
@@ -196,6 +185,7 @@ local function showFindDuplicatesDialog()
 									enabled = LrView.bind "useKeyword",
 									value = LrView.bind("keywordName"),
 									width_in_chars = 20,
+									validate = teekesselchen.checkKeywordValue,
 								},
 							},
 							f:checkbox {
@@ -251,7 +241,6 @@ local function showFindDuplicatesDialog()
 							},
 						},
 					},
-				
 				-- 3rd tab
 				f:tab_view_item {
 					title = "Rules",
@@ -392,11 +381,12 @@ local function showFindDuplicatesDialog()
 							title = "Teekesselchen V1.0",
 						},
 						f:static_text {
-							title = "Copyright (C) 2012  Michael Bungenstock",
+							title = "Copyright (C) 2013  Michael Bungenstock",
 						},
 						f:static_text {
 							title = "This program comes with ABSOLUTELY NO WARRANTY",
 						},
+						f:spacer {},
 						f:group_box {
 							title = "Updates",
 							fill_horizontal = 1,
@@ -427,6 +417,7 @@ local function showFindDuplicatesDialog()
 							end,
 						},
 						},
+						f:spacer {},
 						f:group_box {
 							title = "Debugging",
 							fill_horizontal = 1,
@@ -464,21 +455,44 @@ local function showFindDuplicatesDialog()
 				actionVerb = "Find Duplicates",
 				otherVerb = "Save",
 			})
-			
-			
-			if result == "ok" then
+			-- check user action
+			if result == "other" then
+				-- do not check the input, just save it
 				configuration.copyFrom(p)
 				configuration.write()
-				teekesselchen.findDuplicates(configuration.settings)
 			else
-				if result == "other" then
+				if result == "ok" then
+					
+					local msg 
+					local errors = false
+					-- do some error checking
+					-- is a mandatory keyword provided?
+					if string.len(Util.trim(p.keywordName)) == 0 then
+						msg = "Please provide a keyword"
+						errors = true
+					end
+					-- is a collection name provided?
+					if p.useSmartCollection and string.len(Util.trim(p.smartCollectionName)) == 0 then
+						if errors then
+							msg = msg .. " and a smart collection name"
+						else
+							msg = "Please provide a smart collection name"
+							errors = true
+						end
+					end
+					-- finish the sentence
+					if errors then
+						LrDialogs.showError(msg .. " (Open the tab 'Marks').")
+					end
+			
 					configuration.copyFrom(p)
 					configuration.write()
-				end
+					-- is everything fine? then kick off
+					if not errors then
+						teekesselchen.findDuplicates(configuration.settings)
+					end
+				end			  
 			end
-			
-			  
-			
 		end) -- LrFunctionContext.callWithContext
 	end) -- LrTasks.startAsyncTask
 end

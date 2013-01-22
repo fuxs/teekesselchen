@@ -1,7 +1,7 @@
 --[[----------------------------------------------------------------------------
 
     Teekesselchen is a plugin for Adobe Lightroom that finds duplicates by metadata.
-    Copyright (C) 2012  Michael Bungenstock
+    Copyright (C) 2013  Michael Bungenstock
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

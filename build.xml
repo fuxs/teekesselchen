@@ -8,6 +8,10 @@
   	<property name="plugin-dev" location="build/teekesselchen.lrdevplugin"/>
     <property name="plugin-dist" location="dist/teekesselchen.lrplugin"/>
     
+    <condition property="isMac">
+		<os family="mac" />
+ 	</condition>
+ 	
     <target name="init">
     	<!-- Create the time stamp -->
     	<tstamp/>
@@ -24,7 +28,22 @@
     	<copy todir="${plugin-dist}">
     		<fileset dir="${plugin-dev}"/>
   		</copy>
+  		<zip destfile="${dist}/Teekesselchen V1_0.zip">
+  			<fileset dir="${dist}">
+  				<exclude name="*.zip" />
+  			</fileset>
+  		</zip>
+  		<checksum file="${dist}/Teekesselchen V1_0.zip" algorithm="MD5" format="MD5SUM"/>
+  		<checksum file="${dist}/Teekesselchen V1_0.zip" algorithm="SHA-1" format="MD5SUM"/>
   	</target>
+  	
+  	<target name="installer" depends="dist" description="creates an installer for mac" >
+  		<exec executable="/Applications/PackageMaker.app/Contents/MacOS/PackageMaker">
+  			<arg line="--doc mac/teekesselchen.pmdoc --out '${dist}/Teekesselchen V1_0.pkg'" />
+  		</exec>
+  		<checksum file="${dist}/Teekesselchen V1_0.pkg" algorithm="MD5" format="MD5SUM"/>
+  		<checksum file="${dist}/Teekesselchen V1_0.pkg" algorithm="SHA-1" format="MD5SUM"/>
+    </target>
   
 	<target name="clean" description="clean up" >
     	<delete dir="${build}"/>

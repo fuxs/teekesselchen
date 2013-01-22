@@ -1,7 +1,7 @@
 --[[----------------------------------------------------------------------------
 
     Teekesselchen is a plugin for Adobe Lightroom that finds duplicates by metadata.
-    Copyright (C) 2012  Michael Bungenstock
+    Copyright (C) 2013  Michael Bungenstock
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,9 +27,9 @@ Util = {}
 --[[
 	Removes initial and trailing whitespaces
 ]]
-local function trim()	
-		return string.match(str, "^%s*(.-)%s*$")
-	end
+function Util.trim(str)	
+	return string.match(str, "^%s*(.-)%s*$")
+end
 
 --[[
   	Returns a list of tokens delimited by ","
@@ -38,7 +38,7 @@ function Util.split(str)
 	local result = {}
 	if str then
 		for token in string.gmatch(str, "[^,]+") do
-  			table.insert(result, trim(token))
+  			table.insert(result, Util.trim(token))
 		end
 	end
 	return result
