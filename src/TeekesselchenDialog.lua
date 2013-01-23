@@ -44,6 +44,7 @@ local function updater(button)
 end
 
 local function showFindDuplicatesDialog()
+	
 	LrTasks.startAsyncTask( function()
 		LrFunctionContext.callWithContext("DoubletFinderDialog", function(context)
 			local teekesselchen = Teekesselchen.new(context)
@@ -103,6 +104,10 @@ local function showFindDuplicatesDialog()
 							visible = LrView.bind("useMetadata"),
 							
 						},]]
+						f:static_text {
+							title = "Virtual copies are ignored.",
+							visible = LrView.bind("ignoreVirtualCopies"),
+						},
 						f:static_text {
 							title = "Duplicates are marked as rejected.",
 							visible = LrView.bind("useFlag"),
@@ -489,7 +494,21 @@ local function showFindDuplicatesDialog()
 					configuration.write()
 					-- is everything fine? then kick off
 					if not errors then
+						local startTime = os.clock();
 						teekesselchen.findDuplicates(configuration.settings)
+						local timeAux = os.clock() - startTime;
+						local hours = math.floor(timeAux / 3600)
+						timeAux = math.floor(timeAux - (3600 * hours))
+						local minutes = math.floor(timeAux / 60)
+						local seconds = timeAux % 60
+						local infoStr = string.format("Elapsed time: %.2d:%.2d:%.2d", hours, minutes, seconds)
+						local messageStr
+						if teekesselchen.found == 1 then
+							messageStr = string.format("Found 1 duplicate (total: %d, skipped: %d)", teekesselchen.total, teekesselchen.skipped)
+						else
+							messageStr = string.format("Found %d duplicates (total: %d, skipped: %d)", teekesselchen.found, teekesselchen.total, teekesselchen.skipped)
+						end
+						LrDialogs.message(messageStr, infoStr, "info")
 					end
 				end			  
 			end

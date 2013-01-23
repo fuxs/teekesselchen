@@ -26,6 +26,7 @@ Provides the logic.
 Teekesselchen ={}
 
 local LrApplication = import "LrApplication"
+local LrDialogs = import "LrDialogs"
 local LrProgressScope = import "LrProgressScope"
 local LrTasks = import "LrTasks"
 
@@ -36,6 +37,7 @@ local function markDuplicateEnv(iVC, uF, keyword)
 		if #tree == 0 then
 			-- this is easy. just add the photo to the empty list
 			table.insert(tree, photo)
+			return false
 		else
 			-- this list is not empty, thus, we have a duplicate!
 			local needsUpdate = false
@@ -88,6 +90,7 @@ local function markDuplicateEnv(iVC, uF, keyword)
 			end]]
 	  		-- add photo to list
 			table.insert(tree, photo)
+			return true
 		end
 	end
 end
@@ -119,6 +122,8 @@ function Teekesselchen.new(context)
 	local comperators = {}
 
 	self.total = #photos
+	self.skipped = 0
+	self.found = 0
 	-- create a keyword hash table	
 	for i,keyword in ipairs(catalog:getKeywords()) do
 		keywords[keyword:getName()] = keyword
@@ -168,6 +173,10 @@ function Teekesselchen.new(context)
 			return false, value, "Please provide a keyword"
 		end
 		return true, value
+	end
+	
+	function self.hasWriteAccess()
+		return catalog.hasWriteAccess
 	end
 
 	function self.findDuplicates(settings)
@@ -243,48 +252,62 @@ function Teekesselchen.new(context)
 	  	local photo
   		local skip
   		
-  		local progressScope = LrProgressScope( {title = 'Looking for duplicates ...', functionContext = context, } )
+  		-- local progressScope = LrProgressScope( {title = 'Looking for duplicates ...', functionContext = context, } )
+		local progressScope = LrDialogs.showModalProgressDialog({title = 'Looking for duplicates ...', functionContext = context, } )
+		local captionTail = " (total: " .. self.total ..")"
   		-- now iterate over all selected photos
-  			
-
+		
+		local skipCounter = 0
+		local duplicateCounter = 0
   		catalog:withWriteAccessDo("findDuplicates", function()
-  		for i=1,self.total do
-  			-- do the interface stuff at the beginning
-  			progressScope:setPortionComplete(i, total)
-  			LrTasks.yield()
-  			-- select the current photo
-  			photo = photos[i]
-	  		skip = false
-	  		-- skip virtual copies and videos
-	  		if (ignoreVirtualCopies and photo:getRawMetadata("isVirtualCopy")) or
-  				photo:getRawMetadata("isVideo") then
-  				skip = true
-  			else
-			-- skip photos with selected keywords, if provided
-			if ignoreKeywords then
-				for j,keyword in ipairs(photo:getRawMetadata("keywords")) do
-					if ignoreList[keyword:getName()] then
-						skip = true
-						break
+  			for i=1,self.total do
+  				-- do the interface stuff at the beginning
+  				if progressScope:isCanceled() then
+	  				break
+  				end
+  				progressScope:setPortionComplete(i, self.total)
+  				progressScope:setCaption("Checking photo #" .. i .. captionTail)
+ 	 			LrTasks.yield()
+  				-- select the current photo
+  				photo = photos[i]
+	  			skip = false
+		  		-- skip virtual copies and videos
+		  		if (ignoreVirtualCopies and photo:getRawMetadata("isVirtualCopy")) or
+  					photo:getRawMetadata("isVideo") then
+  					skip = true
+	  			else
+				-- skip photos with selected keywords, if provided
+				if ignoreKeywords then
+					for j,keyword in ipairs(photo:getRawMetadata("keywords")) do
+						if ignoreList[keyword:getName()] then
+							skip = true
+							break
+						end
 					end
 				end
 			end
-		end
-		if skip then
-			local copyName = photo:getFormattedMetadata("copyName")
-			local fileName = photo:getFormattedMetadata("fileName")
-			if copyName then
-				logger:debugf(" Skipping %s (Copy %s)", fileName, copyName)
+			if skip then
+				local copyName = photo:getFormattedMetadata("copyName")
+				local fileName = photo:getFormattedMetadata("fileName")
+				if copyName then
+					logger:debugf(" Skipping %s (Copy %s)", fileName, copyName)
+				else
+					logger:debugf(" Skipping %s", fileName)
+				end
+				skipCounter = skipCounter + 1
 			else
-				logger:debugf(" Skipping %s", fileName)
+				if act(tree, photo) then
+					duplicateCounter = duplicateCounter + 1
+				end
 			end
-		else
-			logger:debug("Jetzt aber")
-			act(tree, photo)
 		end
+		
+	end)
+		progressScope:done()
+		self.found = duplicateCounter
+		self.skipped = skipCounter
 	end
-		end)
-	end
+	
 
 	return self
 end
