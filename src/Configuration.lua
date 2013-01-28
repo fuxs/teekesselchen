@@ -56,13 +56,12 @@ function Configuration.new()
 				checkForUpdates = true,
 				activateLogging = false,
 				activateTracking = false,
-				
 	}
 	
 	local aux = prefs.settings
 	if not aux then aux = defaultSettings end
 	-- clone table
-	for k,v in pairs(prefs.settings) do self.settings[k] = v end
+	for k,v in pairs(aux) do self.settings[k] = v end
 	
 	function self.copyTo(t)
 		_G.logger:debug("copyTo()")
