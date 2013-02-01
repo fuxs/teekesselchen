@@ -31,7 +31,7 @@ function Updater.new()
 	local self = {}
 	self.info = {}
 	
-	function self:getInfo()
+	function self.getInfo()
 		local body, headers = LrHttp.get("http://www.bungenstock.de/teekesselchen/update.php", nil, 5)
 		local status = headers["status"]
 		self.info = {}
@@ -44,7 +44,7 @@ function Updater.new()
 		return false
 	end
 	
-	function self:getVersion()
+	function self.getVersion()
 		local result = 0
 		local cv = self.info["currentVersion"]
 		if cv then
@@ -54,11 +54,11 @@ function Updater.new()
 		return result
 	end
 	
-	function self:getVersionStr()
+	function self.getVersionStr()
 		return self.info["currentVersion"]
 	end
 	
-	function self:getUrl()
+	function self.getUrl()
 		local result = "http://www.bungenstock.de"
 		local sUrl = self.info["showUrl"]
 		if sUrl then result = sUrl end

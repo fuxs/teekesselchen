@@ -42,11 +42,11 @@ _G.logger:enable("print")
 if settings.checkForUpdates then
 	LrTasks.startAsyncTask(function()
 		local u = Updater.new()
-		if u:getInfo() then
-			if u:getVersion() > _G.CURRENT_VERSION then
-				local result = LrDialogs.confirm("A new versions is available (" .. u:getVersionStr() .. ")", "Select Update to open info in browser", "Update")
+		if u.getInfo() then
+			if u.getVersion() > _G.CURRENT_VERSION then
+				local result = LrDialogs.confirm("A new versions is available (" .. u.getVersionStr() .. ")", "Select Update to open info in browser", "Update")
 				if result == "ok" then
-					LrHttp.openUrlInBrowser(u:getUrl())
+					LrHttp.openUrlInBrowser(u.getUrl())
 				end
 			end
 		end

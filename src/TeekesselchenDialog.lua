@@ -406,11 +406,12 @@ local function showFindDuplicatesDialog()
 							action = function(button)
 								LrTasks.startAsyncTask( function()
 									local u = Updater.new()
-									if u:getInfo() then
-										if u:getVersion() > _G.CURRENT_VERSION then
-											local result = LrDialogs.confirm("A new versions is available (" .. u:getVersionStr() .. ")", "Select Update to open info in browser", "Update")
+									if u.getInfo() then
+								LrDialogs.message("Version " .. u.getVersion())
+										if u.getVersion() > _G.CURRENT_VERSION then
+											local result = LrDialogs.confirm("A new versions is available (" .. u.getVersionStr() .. ")", "Select Update to open info in browser", "Update")
 											if result == "ok" then
-												LrHttp.openUrlInBrowser(u:getUrl())
+												LrHttp.openUrlInBrowser(u.getUrl())
 											end
 										else
 											LrDialogs.message("You are using the latest version.", "No update is necessary.", "info")
