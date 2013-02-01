@@ -389,6 +389,9 @@ local function showFindDuplicatesDialog()
 							title = "Copyright (C) 2013  Michael Bungenstock",
 						},
 						f:static_text {
+							title = "Contact: michael@bungenstock.de",
+						},
+						f:static_text {
 							title = "This program comes with ABSOLUTELY NO WARRANTY",
 						},
 						f:spacer {},

@@ -44,6 +44,11 @@
   		<checksum file="${dist}/Teekesselchen V1_0.pkg" algorithm="MD5" format="MD5SUM"/>
   		<checksum file="${dist}/Teekesselchen V1_0.pkg" algorithm="SHA-1" format="MD5SUM"/>
     </target>
+    
+    <target name="checksum" depends="dist" description="creates checksums for windows" >
+  		<checksum file="${dist}/Setup.exe" algorithm="MD5" format="MD5SUM"/>
+  		<checksum file="${dist}/Setup.exe" algorithm="SHA-1" format="MD5SUM"/>
+    </target>
   
 	<target name="clean" description="clean up" >
     	<delete dir="${build}"/>

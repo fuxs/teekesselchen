@@ -26,12 +26,12 @@ Adds menu items to Lightroom.
 
 return {
 	
-	LrSdkVersion = 3.0,
-	LrSdkMinimumVersion = 1.3, -- minimum SDK version required by this plug-in
+	LrSdkVersion = 4.0,
+	LrSdkMinimumVersion = 3.0, -- minimum SDK version required by this plug-in
 
 	LrToolkitIdentifier = "de.bungenstock.lightroom.teekesselchen",
 
-	LrPluginName = LOC "$$$/Teekesselchen/PluginName=Teekesselchen",
+	LrPluginName = LOC "Teekesselchen",
 	
 	LrPluginInfoUrl = "http://www.bungenstock.de/teekesselchen"	,
 	LrInitPlugin = "PluginInit.lua",
@@ -39,7 +39,7 @@ return {
 	-- LrMetadataProvider = "TeekesselchenMetadataDefinition.lua",
 
 	LrLibraryMenuItems = {{
-		    title = LOC "$$$/Teekesselchen/MenuItem=Find Duplicates",
+		    title = LOC "Find Duplicates",
 		    file = "TeekesselchenDialog.lua",
 	}},
 	VERSION = { major=1, minor=0, revision=0, build=1 },
