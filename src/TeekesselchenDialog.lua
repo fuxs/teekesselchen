@@ -410,7 +410,6 @@ local function showFindDuplicatesDialog()
 								LrTasks.startAsyncTask( function()
 									local u = Updater.new()
 									if u.getInfo() then
-								LrDialogs.message("Version " .. u.getVersion())
 										if u.getVersion() > _G.CURRENT_VERSION then
 											local result = LrDialogs.confirm("A new versions is available (" .. u.getVersionStr() .. ")", "Select Update to open info in browser", "Update")
 											if result == "ok" then
