@@ -34,6 +34,19 @@ local LrHttp	 = import "LrHttp"
 require "Teekesselchen"
 require "Updater"
 
+local license = "This program is free software: you can redistribute it and/or modify " ..
+	"it under the terms of the GNU General Public License as published by " ..
+	"the Free Software Foundation, either version 3 of the License, or " ..
+    "(at your option) any later version." ..
+	"\n" ..
+    "This program is distributed in the hope that it will be useful," ..
+    "but WITHOUT ANY WARRANTY; without even the implied warranty of " ..
+    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the " ..
+    "GNU General Public License for more details." ..
+	"\n" ..
+    "You should have received a copy of the GNU General Public License " ..
+    "along with this program.  If not, see <http://www.gnu.org/licenses/>."
+
 local function updater(button)
 	LrDialogs.message("ja")
 	LrTasks.startAsyncTask( function()
@@ -211,7 +224,7 @@ local function showFindDuplicatesDialog()
 							-- Use a smart folder?
 							--
 							f:checkbox {
-								title = "Create and use a smart collection?",
+								title = "Create and use a smart collection",
 								value = LrView.bind "useSmartCollection",
 							},
 							
@@ -391,8 +404,16 @@ local function showFindDuplicatesDialog()
 						f:static_text {
 							title = "Contact: michael@bungenstock.de",
 						},
-						f:static_text {
-							title = "This program comes with ABSOLUTELY NO WARRANTY",
+						-- f:static_text {
+						-- 	title = "This program comes with ABSOLUTELY NO WARRANTY",
+						-- },
+						f:edit_field {
+							height_in_lines = 11,
+							width_in_chars = 36,
+							alignment = "left",
+							font = "<system/small>",
+							enabled = false,
+							value = license,
 						},
 						f:spacer {},
 						f:group_box {
@@ -433,10 +454,6 @@ local function showFindDuplicatesDialog()
 							f:checkbox {
 								title = "Logging",
 								value = LrView.bind("activateLogging"),
-							},
-							f:checkbox {
-								title = "Tracking",
-								value = LrView.bind("activateTracking"),
 							},
 						},
 					},

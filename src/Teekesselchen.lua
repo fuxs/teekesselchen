@@ -115,7 +115,7 @@ function Teekesselchen.new(context)
 
 	local self = {}
 
-	local logger = _G.logger
+	
 	local catalog = LrApplication.activeCatalog()
 	local photos = catalog:getMultipleSelectedOrAllPhotos()
 	local keywords = {}
@@ -180,7 +180,11 @@ function Teekesselchen.new(context)
 	end
 
 	function self.findDuplicates(settings)
-  		logger:debug("findDuplicates")
+  		local logger = _G.logger
+  		local doLog = settings.activateLogging
+  		if doLog then
+  			logger:debug("findDuplicates")
+  		end
 	  	local ignoreList, _ = getKeywordsForString(settings.ignoreKeywords)
   		local ignoreKeywords = #ignoreList > 0
   		local ignoreVirtualCopies = settings.ignoreVirtualCopies
@@ -188,10 +192,14 @@ function Teekesselchen.new(context)
   		
   		-- get the keyword and create a smart collection if necessary
   		catalog:withWriteAccessDo("createKeyword", function()
-	  		logger:debug("Using keyword " .. settings.keywordName .. " as mark")
+  			if doLog then
+	  			logger:debug("Using keyword " .. settings.keywordName .. " as mark")
+	  		end
 	  		keywordObj = catalog:createKeyword(settings.keywordName, nil, false, nil, true)
   			if settings.useSmartCollection then
-  				logger:debug("Using smart collection " .. settings.smartCollectionName)
+  				if doLog then
+  					logger:debug("Using smart collection " .. settings.smartCollectionName)
+  				end
   				catalog:createSmartCollection(settings.smartCollectionName, {
 		    		criteria = "keywords",
 		    		operation = "words",
@@ -205,47 +213,65 @@ function Teekesselchen.new(context)
   			markDuplicateEnv(settings.ignoreVirtualCopies, settings.useFlag, keywordObj))
 		if settings.useGPSAltitude then
 			act = comperatorEnv("gpsAltitude", act)
-			logger:debug("findDuplicates: using gpsAltitude")
+			if doLog then
+				logger:debug("findDuplicates: using gpsAltitude")
+			end
 		end
 		if settings.useGPS then
 			act = comperatorEnv("gps", act)
-			logger:debug("findDuplicates: using gps")
+			if doLog then
+				logger:debug("findDuplicates: using gps")
+			end
 		end
 		if settings.useExposureBias then
 			act = comperatorEnv("exposureBias", act)
-			logger:debug("findDuplicates: using exposureBias")
+			if doLog then
+				logger:debug("findDuplicates: using exposureBias")
+			end
 		end
 		if settings.useAperture then
 			act = comperatorEnv("aperture", act)
-			logger:debug("findDuplicates: using aperture")
+			if doLog then
+				logger:debug("findDuplicates: using aperture")
+			end
 		end
 		if settings.useShutterSpeed then
 			act = comperatorEnv("shutterSpeed", act)
-			logger:debug("findDuplicates: using shutterSpeed")
+			if doLog then
+				logger:debug("findDuplicates: using shutterSpeed")
+			end
 		end
 		if settings.useIsoRating then
 			act = comperatorEnv("isoSpeedRating", act)
-			logger:debug("findDuplicates: using isoSpeedRating")
+			if doLog then
+				logger:debug("findDuplicates: using isoSpeedRating")
+			end
 		end
 		if settings.useLens then
 			act = comperatorEnv("lens", act)
-			logger:debug("findDuplicates: using lens")
+			if doLog then
+				logger:debug("findDuplicates: using lens")
+			end
 		end
 		if settings.useSerialNumber then
 			act = comperatorEnv("cameraSerialNumber", act)
-			logger:debug("findDuplicates: using cameraSerialNumber")
+			if doLog then
+				logger:debug("findDuplicates: using cameraSerialNumber")
+			end
 		end
 		if settings.useModel then
 			act = comperatorEnv("cameraModel", act)
-			logger:debug("findDuplicates: using cameraModel")
+			if doLog then
+				logger:debug("findDuplicates: using cameraModel")
+			end
 		end
 		if settings.useMake then
 			act = comperatorEnv("cameraMake", act)
-			logger:debug("findDuplicates: using exposureBias")
+			if doLog then
+				logger:debug("findDuplicates: using exposureBias")
+			end
 		end
   	
-  	
-  		logger:debugf("Number of Ignores %u für %s", #ignoreList, settings.ignoreKeywords)
   		-- provide a keyword object in current settings
   	
   		local tree = {}
@@ -270,6 +296,9 @@ function Teekesselchen.new(context)
  	 			LrTasks.yield()
   				-- select the current photo
   				photo = photos[i]
+  				if doLog then
+  					logger:debugf("Processing photo %s (#%i)", photo:getFormattedMetadata("fileName"), i)
+  				end
 	  			skip = false
 		  		-- skip virtual copies and videos
 		  		if (ignoreVirtualCopies and photo:getRawMetadata("isVirtualCopy")) or
@@ -289,10 +318,12 @@ function Teekesselchen.new(context)
 			if skip then
 				local copyName = photo:getFormattedMetadata("copyName")
 				local fileName = photo:getFormattedMetadata("fileName")
-				if copyName then
-					logger:debugf(" Skipping %s (Copy %s)", fileName, copyName)
-				else
-					logger:debugf(" Skipping %s", fileName)
+				if doLog then
+					if copyName then
+						logger:debugf(" Skipping %s (Copy %s)", fileName, copyName)
+					else
+						logger:debugf(" Skipping %s", fileName)
+					end
 				end
 				skipCounter = skipCounter + 1
 			else
