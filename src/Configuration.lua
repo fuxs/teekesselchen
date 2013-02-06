@@ -36,7 +36,7 @@ function Configuration.new()
 				useKeyword = true,
 				keywordName = "Duplicate",
 				useMetadata = false,
-				useFlag = false,
+				useFlag = true,
 				useSmartCollection = true,
 				smartCollectionName = "Duplicates",					
 				useCaptureDate = true,
@@ -55,7 +55,6 @@ function Configuration.new()
 				ignoreKeywords = "",
 				checkForUpdates = true,
 				activateLogging = false,
-				activateTracking = false,
 	}
 	
 	local aux = prefs.settings

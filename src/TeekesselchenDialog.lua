@@ -409,9 +409,9 @@ local function showFindDuplicatesDialog()
 						-- },
 						f:edit_field {
 							height_in_lines = 11,
-							width_in_chars = 36,
+							width_in_chars = 40,
 							alignment = "left",
-							font = "<system/small>",
+							font = { name = "Helvetica Light", size = 10},
 							enabled = false,
 							value = license,
 						},
