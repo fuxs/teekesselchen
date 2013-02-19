@@ -1,4 +1,4 @@
-Teekesselchen V1.0
+Teekesselchen V1.1
 ==================
 Please refer to http://www.bungenstock.de/teekesselchen/ to get more information and
 documentation.
@@ -20,10 +20,10 @@ Windows: C:\Users\<username>\AppData\Roaming\Adobe\Lightroom\Plugins\
 Documentation
 -------------
 
-Tutorial http://www.bungenstock.de/teekesselchen/doc/v1/en/tutorial.php
-Plug-in  http://www.bungenstock.de/teekesselchen/doc/v1/en/summary.php
+Tutorial http://www.bungenstock.de/teekesselchen/doc/v1_1/en/tutorial.php
+Plug-in  http://www.bungenstock.de/teekesselchen/doc/v1_1/en/summary.php
 
 License
 ----------
 Open the tab "About" in the plug-in
-(http://www.bungenstock.de/teekesselchen/doc/v1/en/about.php).
+(http://www.bungenstock.de/teekesselchen/doc/v1_1/en/about.php).

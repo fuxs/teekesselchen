@@ -28,9 +28,7 @@ Configuration = {}
 
 function Configuration.new()
 	self = {}
-	self.settings = {}
 	
-	local prefs = LrPrefs.prefsForPlugin()
 	-- settings
 	local defaultSettings = {
 				useKeyword = true,
@@ -38,6 +36,8 @@ function Configuration.new()
 				useMetadata = false,
 				useFlag = true,
 				useSmartCollection = true,
+				cleanSmartCollection = false,
+				resetFlagSmartCollection = true,
 				smartCollectionName = "Duplicates",					
 				useCaptureDate = true,
 				useMake = true,
@@ -56,11 +56,20 @@ function Configuration.new()
 				checkForUpdates = true,
 				activateLogging = false,
 	}
-	
+	local prefs = LrPrefs.prefsForPlugin()
 	local aux = prefs.settings
-	if not aux then aux = defaultSettings end
+	if aux == nil then aux = defaultSettings end
+	
+	self.settings = {}
 	-- clone table
-	for k,v in pairs(aux) do self.settings[k] = v end
+	for k,v in pairs(defaultSettings) do 
+		local temp = aux[k]
+		if temp == nil then
+			temp = v
+		end
+		self.settings[k] = temp
+	end
+	
 	
 	function self.copyTo(t)
 		for k,v in pairs(self.settings) do t[k] = v end

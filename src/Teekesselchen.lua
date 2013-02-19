@@ -112,10 +112,7 @@ end
 
 
 function Teekesselchen.new(context)
-
 	local self = {}
-
-	
 	local catalog = LrApplication.activeCatalog()
 	local photos = catalog:getMultipleSelectedOrAllPhotos()
 	local keywords = {}
@@ -134,7 +131,6 @@ function Teekesselchen.new(context)
 	list of Lightroom keyword objects and a list of not found strings
 	]]
 	local function getKeywordsForString(str)
-		local keywords = Teekesselchen.keywords
 		local result = {}
 		local keyword
 		local notFound = {}
@@ -200,11 +196,20 @@ function Teekesselchen.new(context)
   				if doLog then
   					logger:debug("Using smart collection " .. settings.smartCollectionName)
   				end
-  				catalog:createSmartCollection(settings.smartCollectionName, {
+  				local collection = catalog:createSmartCollection(settings.smartCollectionName, {
 		    		criteria = "keywords",
 		    		operation = "words",
 		    		value = settings.keywordName,
 				}, nil, true)
+				if collection and settings.cleanSmartCollection then
+					for i,oldPhoto in ipairs(collection:getPhotos()) do
+						if settings.resetFlagSmartCollection and 
+						oldPhoto:getRawMetadata("pickStatus") == -1 then
+							oldPhoto:setRawMetadata("pickStatus", 0)
+						end
+						oldPhoto:removeKeyword(keywordObj)
+					end
+				end
 			end
 		end)
 	  	

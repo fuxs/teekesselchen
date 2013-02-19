@@ -63,9 +63,9 @@ local function showFindDuplicatesDialog()
 			local teekesselchen = Teekesselchen.new(context)
 			local f = LrView.osFactory()
 			local p = LrBinding.makePropertyTable(context)
-			local configuration = _G.configuration
+			local configuration = _G.configuration			
 			configuration.copyTo(p)
-
+			
 			local contents = f:tab_view  {
 				bind_to_object = p,
 				-- 1st tab
@@ -103,13 +103,31 @@ local function showFindDuplicatesDialog()
 							visible = LrView.bind("useKeyword"),
 						},
 						f:static_text {
-							title = "Duplicates can be found in the smart folder:",
+							title = "Duplicates can be found in the smart collection:",
 							visible = LrView.bind("useSmartCollection"),
 						},
 						f:static_text {
 							font = "<system/bold>",
 							title = LrView.bind("smartCollectionName"),
 							visible = LrView.bind("useSmartCollection"),
+						},
+						f:static_text {
+							title = "Previous duplicates are removed from smart collection.",
+							visible = LrView.bind {
+								keys = {
+									{
+										key = "cleanSmartCollection",
+									},
+									{
+										key = "useSmartCollection",
+									},
+								},
+								operation = function(binder, value, fromModel)
+									return value.cleanSmartCollection and value.useSmartCollection
+								end,
+								
+							},
+							
 						},
 						
 --[[						f:static_text {
@@ -143,7 +161,7 @@ local function showFindDuplicatesDialog()
 								tooltip = "Click on me to open help in browser.",
 								font = "<system/small>",
 								mouse_down = function(o)
-									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1/en/summary.php")
+									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_1/en/summary.php")
 								end
 							},
 						},
@@ -212,7 +230,7 @@ local function showFindDuplicatesDialog()
 							},
 						},
 						--
-						-- Smart Folder
+						-- Smart Collection
 						--
 						f:group_box {
 							width = LrView.share("group_width"),
@@ -221,11 +239,11 @@ local function showFindDuplicatesDialog()
 							spacing = f:control_spacing(),
 							
 							--
-							-- Use a smart folder?
+							-- Use a smart collection?
 							--
 							f:checkbox {
 								title = "Create and use a smart collection",
-								value = LrView.bind "useSmartCollection",
+								value = LrView.bind("useSmartCollection"),
 							},
 							
 							f:row {
@@ -241,8 +259,19 @@ local function showFindDuplicatesDialog()
 									width_in_chars = 20,
 								},
 							},
+							f:row {
+								f:checkbox {
+									title = "Clean up before start",
+									value = LrView.bind("cleanSmartCollection"),
+									enabled = LrView.bind("useSmartCollection"),
+								},
+								f:checkbox {
+									title = "Reset rejected flag",
+									value = LrView.bind("resetFlagSmartCollection"),
+									enabled = LrView.bind("cleanSmartCollection"),
+								},
+							},
 						},
-															
 					},
 					f:column {
 						fill_horizontal = 1,
@@ -254,7 +283,7 @@ local function showFindDuplicatesDialog()
 								tooltip = "Click on me to open help in browser.",
 								font = "<system/small>",
 								mouse_down = function(o)
-									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1/en/marks.php")
+									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_1/en/marks.php")
 								end
 							},
 						},
@@ -383,7 +412,7 @@ local function showFindDuplicatesDialog()
 							tooltip = "Click on me to open help in browser.",
 							font = "<system/small>",
 							mouse_down = function(o)
-							LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1/en/rules.php")
+							LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_1/en/rules.php")
 							end
 						},
 				},
@@ -396,7 +425,7 @@ local function showFindDuplicatesDialog()
 						fill_horizontal = 1,
 						spacing = f:control_spacing(),
 						f:static_text {
-							title = "Teekesselchen V1.0",
+							title = "Teekesselchen V1.1",
 						},
 						f:static_text {
 							title = "Copyright (C) 2013  Michael Bungenstock",
@@ -467,7 +496,7 @@ local function showFindDuplicatesDialog()
 								tooltip = "Click on me to open help in browser.",
 								font = "<system/small>",
 								mouse_down = function(o)
-									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1/en/marks.php")
+									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_1/en/about.php")
 								end
 							},
 						},
@@ -475,7 +504,7 @@ local function showFindDuplicatesDialog()
 			}
 			
 			local result = LrDialogs.presentModalDialog({
-				title = "Teekesselchen V1.0: Find Duplicates",
+				title = "Teekesselchen V1.1: Find Duplicates",
 				contents = contents,
 				actionVerb = "Find Duplicates",
 				otherVerb = "Save",
