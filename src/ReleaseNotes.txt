@@ -1,9 +1,9 @@
 Release Notes
 
-V1.1 released on 18th of Feb
+V1.1 released on 19th of Feb
 Bug fixes:
 - Ignore keywords caused an execution error. This is fixed.
-- The help link on the About tab references a wrong page. This is fixed.
+- The help link on the About tab referenced a wrong page. This is fixed.
 - The summary page used the term smart folder. This has been changed to the right term
 smart collection.
 
