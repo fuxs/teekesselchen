@@ -24,6 +24,7 @@ This is the dialog.
 
 ------------------------------------------------------------------------------]]
 
+local LrApplication = import "LrApplication"
 local LrBinding = import "LrBinding"
 local LrDialogs = import "LrDialogs"
 local LrFunctionContext = import "LrFunctionContext"
@@ -63,8 +64,14 @@ local function showFindDuplicatesDialog()
 			local teekesselchen = Teekesselchen.new(context)
 			local f = LrView.osFactory()
 			local p = LrBinding.makePropertyTable(context)
-			local configuration = _G.configuration			
+			local configuration = _G.configuration
+			local lrVersion = LrApplication.versionTable()
+			local lrMajor = lrVersion.major
+			local lrMinor = lrVersion.minor
+			local supportsFlag = lrMajor >= 4
+			
 			configuration.copyTo(p)
+			p.useFlag = p.useFlag and supportsFlag
 			
 			local contents = f:tab_view  {
 				bind_to_object = p,
@@ -227,6 +234,7 @@ local function showFindDuplicatesDialog()
 							f:checkbox {
 								title = "Mark duplicates as rejected",
 								value = LrView.bind("useFlag"),
+								enabled = supportsFlag,
 							},
 						},
 						--
@@ -425,7 +433,7 @@ local function showFindDuplicatesDialog()
 						fill_horizontal = 1,
 						spacing = f:control_spacing(),
 						f:static_text {
-							title = "Teekesselchen V1.1",
+							title = "Teekesselchen V1.2",
 						},
 						f:static_text {
 							title = "Copyright (C) 2013  Michael Bungenstock",
@@ -504,7 +512,7 @@ local function showFindDuplicatesDialog()
 			}
 			
 			local result = LrDialogs.presentModalDialog({
-				title = "Teekesselchen V1.1: Find Duplicates",
+				title = "Teekesselchen V1.2: Find Duplicates",
 				contents = contents,
 				actionVerb = "Find Duplicates",
 				otherVerb = "Save",
