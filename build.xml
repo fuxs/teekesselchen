@@ -22,27 +22,30 @@
     	<copy todir="${plugin-dev}">
     		<fileset dir="src"/>
   		</copy>
+  		<copy todir="${plugin-dev}">
+    		<fileset dir="3rd/exiftool"/>
+  		</copy>
   	</target>
   	
   	<target name="dist" depends="build" description="creates a plugin folder" >
     	<copy todir="${plugin-dist}">
     		<fileset dir="${plugin-dev}"/>
   		</copy>
-  		<zip destfile="${dist}/Teekesselchen V1_2.zip">
+  		<zip destfile="${dist}/Teekesselchen V1_3.zip">
   			<fileset dir="${dist}">
   				<include name="*.lrplugin/**" />
   			</fileset>
   		</zip>
-  		<checksum file="${dist}/Teekesselchen V1_2.zip" algorithm="MD5" format="MD5SUM"/>
-  		<checksum file="${dist}/Teekesselchen V1_2.zip" algorithm="SHA-1" format="MD5SUM"/>
+  		<checksum file="${dist}/Teekesselchen V1_3.zip" algorithm="MD5" format="MD5SUM"/>
+  		<checksum file="${dist}/Teekesselchen V1_3.zip" algorithm="SHA-1" format="MD5SUM"/>
   	</target>
   	
   	<target name="installer" depends="dist" description="creates an installer for mac" >
   		<exec executable="/Applications/PackageMaker.app/Contents/MacOS/PackageMaker">
-  			<arg line="--doc mac/teekesselchen.pmdoc --out '${dist}/Teekesselchen V1_2.pkg'" />
+  			<arg line="--doc mac/teekesselchen.pmdoc --out '${dist}/Teekesselchen V1_3.pkg'" />
   		</exec>
-  		<checksum file="${dist}/Teekesselchen V1_2.pkg" algorithm="MD5" format="MD5SUM"/>
-  		<checksum file="${dist}/Teekesselchen V1_2.pkg" algorithm="SHA-1" format="MD5SUM"/>
+  		<checksum file="${dist}/Teekesselchen V1_3.pkg" algorithm="MD5" format="MD5SUM"/>
+  		<checksum file="${dist}/Teekesselchen V1_3.pkg" algorithm="SHA-1" format="MD5SUM"/>
     </target>
     
     <target name="checksum" depends="dist" description="creates checksums for windows" >

@@ -22,6 +22,8 @@ Util.lua
 
 ------------------------------------------------------------------------------]]
 
+local LrPathUtils = import "LrPathUtils"
+
 Util = {}
 
 --[[
@@ -60,4 +62,21 @@ function Util.implode(d,p)
   	end
   	result = result .. p[#p]
 	return result
+end
+
+function Util.getExifToolCmd(parameters)
+	local cmd
+	if WIN_ENV then
+		cmd = "exiftool.exe"
+	else
+		-- must be mac
+		cmd = "exiftool"
+	end
+	LrPathUtils.child( _PLUGIN.path, cmd)
+	cmd = cmd .. " " .. parameters
+	return  cmd
+end
+
+function Util.getTempPath(name)
+	return LrPathUtils.child( LrPathUtils.getStandardFilePath("temp"), name)
 end

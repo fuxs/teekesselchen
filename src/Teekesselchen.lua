@@ -29,10 +29,13 @@ local LrApplication = import "LrApplication"
 local LrDialogs = import "LrDialogs"
 local LrProgressScope = import "LrProgressScope"
 local LrTasks = import "LrTasks"
+local LrFileUtils = import "LrFileUtils"
 
 require "Util"
 
-local function markDuplicateEnv(iVC, uF, keyword)
+local function markDuplicateEnv(settings, keyword)
+	local iVC = settings.ignoreVirtualCopies
+	local uf = settings.useFlag
 	return function(tree, photo)
 		if #tree == 0 then
 			-- this is easy. just add the photo to the empty list
@@ -88,9 +91,67 @@ local function markDuplicateEnv(iVC, uF, keyword)
 				end
 				photo:setPropertyForPlugin(_PLUGIN, "duplicate_uuid", uuid)
 			end]]
-	  		-- add photo to list
 			table.insert(tree, photo)
 			return true
+		end
+	end
+end
+
+local function getExifToolData(settings)
+	local parameters = settings.exifToolParameters
+  	local doLog = settings.activateLogging
+	local cmd = Util.getExifToolCmd(parameters)
+	local temp = Util.getTempPath("teekesselchen_exif.tmp")
+	local logger = _G.logger
+	
+	return function(photo)
+		local path = photo:getRawMetadata("path")
+		local cmdLine = cmd .. " " .. path .." > " .. temp
+		local value
+		if LrTasks.execute(cmdLine) == 0 then
+			value = LrFileUtils.readFile(temp)
+			if doLog then
+				logger:debug("getExifToolData data: " .. value)
+			end
+		else
+			if doLog then
+				value = LrFileUtils.readFile(temp)
+				logger:debug("getExifToolData error: " .. value)
+			end
+		end
+		-- nil is not a valid key, thus, we take a dummy value
+    	if not value then value = "123exifTool456" end
+    	return value
+	end
+end
+
+local function exifToolEnv(exifTool, marker)
+	return function(auxTree, photo)
+		if #auxTree == 0 then
+			-- this is easy. just add the photo to the empty list
+			table.insert(auxTree, photo)
+			return false
+		else
+			local currentMap
+			local firstKey
+			if #auxTree == 1 then
+				local firstPhoto = auxTree[1]
+				firstKey = exifTool(firstPhoto)
+				-- adds the new map as second element
+				currentMap = {}
+				currentMap[firstKey] = {firstPhoto}
+				table.insert(auxTree, currentMap)
+			else
+				currentMap = auxTree[2]
+			end
+			
+			local key = exifTool(photo)
+			local tree = currentMap[key]
+			if not tree then
+				currentMap[key] = {photo}
+				return false
+			end
+			return marker(tree, photo)
 		end
 	end
 end
@@ -201,6 +262,7 @@ function Teekesselchen.new(context)
 		    		operation = "words",
 		    		value = settings.keywordName,
 				}, nil, true)
+				-- removes the existing photos from the smart collection
 				if collection and settings.cleanSmartCollection then
 					for i,oldPhoto in ipairs(collection:getPhotos()) do
 						if settings.resetFlagSmartCollection and 
@@ -214,8 +276,14 @@ function Teekesselchen.new(context)
 		end)
 	  	
 	  	-- build the comparator chain
-  		local act = comperatorEnv("dateTimeOriginal",
-  			markDuplicateEnv(settings.ignoreVirtualCopies, settings.useFlag, keywordObj))
+	  	local act = markDuplicateEnv(settings, keywordObj)
+	  	if settings.useExifTool then
+	  		act = exifToolEnv(getExifToolData(settings), act)
+	  		if doLog then
+				logger:debug("findDuplicates: using exifTool")
+			end
+	  	end
+		act = comperatorEnv("dateTimeOriginal", act)
 		if settings.useGPSAltitude then
 			act = comperatorEnv("gpsAltitude", act)
 			if doLog then
@@ -337,7 +405,6 @@ function Teekesselchen.new(context)
 				end
 			end
 		end
-		
 	end)
 		progressScope:done()
 		self.found = duplicateCounter

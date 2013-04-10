@@ -379,8 +379,33 @@ local function showFindDuplicatesDialog()
 									},
 								},
 							},
+						},
+						f:group_box {
+							title = "ExifTool",
+							fill_horizontal = 1,
+							spacing = f:control_spacing(),
+							f:checkbox {
+								title = "Use ExifTool",
+								value = LrView.bind("useExifTool"),
 							},
-							f:group_box {
+							f:row {
+								spacing = f:label_spacing(),
+								f:static_text {
+									title = "Parameters:",
+									alignment = "right",
+									width = LrView.share "label_width", -- the shared binding
+									enabled = LrView.bind "useExifTool",
+								},
+								f:edit_field {
+									height_in_lines = 1,
+--									validate =,
+									width_in_chars = 26,
+									value = LrView.bind "exifToolParameters",
+									enabled = LrView.bind "useExifTool",
+								},
+							},
+						},
+						f:group_box {
 							title = "Ignore",
 							fill_horizontal = 1,
 							spacing = f:control_spacing(),
@@ -433,7 +458,7 @@ local function showFindDuplicatesDialog()
 						fill_horizontal = 1,
 						spacing = f:control_spacing(),
 						f:static_text {
-							title = "Teekesselchen V1.2",
+							title = "Teekesselchen V1.3",
 						},
 						f:static_text {
 							title = "Copyright (C) 2013  Michael Bungenstock",
@@ -512,7 +537,7 @@ local function showFindDuplicatesDialog()
 			}
 			
 			local result = LrDialogs.presentModalDialog({
-				title = "Teekesselchen V1.2: Find Duplicates",
+				title = "Teekesselchen V1.3: Find Duplicates",
 				contents = contents,
 				actionVerb = "Find Duplicates",
 				otherVerb = "Save",
@@ -546,7 +571,6 @@ local function showFindDuplicatesDialog()
 					if errors then
 						LrDialogs.showError(msg .. " (Open the tab 'Marks').")
 					end
-			
 					configuration.copyFrom(p)
 					configuration.write()
 					-- is everything fine? then kick off

@@ -55,6 +55,8 @@ function Configuration.new()
 				ignoreKeywords = "",
 				checkForUpdates = true,
 				activateLogging = false,
+				useExifTool = false,
+				exifToolParameters = "-SequenceNumber -SubSecTime"
 	}
 	local prefs = LrPrefs.prefsForPlugin()
 	local aux = prefs.settings
