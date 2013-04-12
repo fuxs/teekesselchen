@@ -1,6 +1,20 @@
 Release Notes
 
-V1.1 released on 19th of Feb
+V1.3 released on 10th of Apr 2013
+Bug fix:
+- Collection creation in combination with the clean up option caused an error
+
+Improvementes:
+- Integrates now exiftool to get more details about the photos. Sequential shootings
+tend to produce duplicates because of the time resolution based on seconds. Now 
+Teekesselchen can read data which is not provided by Lightroom itself, e.g. the sub-second
+or the sequence number.
+
+V1.2 released on 3rd of Mar 2013
+Bug fix:
+- The option mark duplicates as rejected caused an error in Lighroom versions < 4.x
+
+V1.1 released on 19th of Feb 2013
 Bug fixes:
 - Ignore keywords caused an execution error. This is fixed.
 - The help link on the About tab referenced a wrong page. This is fixed.
@@ -11,5 +25,5 @@ Improvements:
 - Prior clean up of the duplicate smart collection. If activated this collection
 shows duplicates from the last run only.
 
-V1.0 released on 6th of Feb
+V1.0 released on 6th of Feb 2013
 First version.

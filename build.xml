@@ -25,12 +25,14 @@
   		<copy todir="${plugin-dev}">
     		<fileset dir="3rd/exiftool"/>
   		</copy>
+  		<chmod file="${plugin-dev}/exiftool" perm="u+x" />
   	</target>
   	
   	<target name="dist" depends="build" description="creates a plugin folder" >
     	<copy todir="${plugin-dist}">
     		<fileset dir="${plugin-dev}"/>
   		</copy>
+  		<chmod file="${plugin-dist}/exiftool" perm="u+x" />
   		<zip destfile="${dist}/Teekesselchen V1_3.zip">
   			<fileset dir="${dist}">
   				<include name="*.lrplugin/**" />

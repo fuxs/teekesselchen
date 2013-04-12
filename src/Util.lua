@@ -72,9 +72,7 @@ function Util.getExifToolCmd(parameters)
 		-- must be mac
 		cmd = "exiftool"
 	end
-	LrPathUtils.child( _PLUGIN.path, cmd)
-	cmd = cmd .. " " .. parameters
-	return  cmd
+	return LrPathUtils.child( _PLUGIN.path, cmd) .. " " .. parameters
 end
 
 function Util.getTempPath(name)

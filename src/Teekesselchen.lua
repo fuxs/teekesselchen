@@ -35,7 +35,7 @@ require "Util"
 
 local function markDuplicateEnv(settings, keyword)
 	local iVC = settings.ignoreVirtualCopies
-	local uf = settings.useFlag
+	local uF = settings.useFlag
 	return function(tree, photo)
 		if #tree == 0 then
 			-- this is easy. just add the photo to the empty list
@@ -103,7 +103,6 @@ local function getExifToolData(settings)
 	local cmd = Util.getExifToolCmd(parameters)
 	local temp = Util.getTempPath("teekesselchen_exif.tmp")
 	local logger = _G.logger
-	
 	return function(photo)
 		local path = photo:getRawMetadata("path")
 		local cmdLine = cmd .. " " .. path .." > " .. temp
@@ -115,8 +114,7 @@ local function getExifToolData(settings)
 			end
 		else
 			if doLog then
-				value = LrFileUtils.readFile(temp)
-				logger:debug("getExifToolData error: " .. value)
+				logger:debug("getExifToolData error for : " .. cmdLine)
 			end
 		end
 		-- nil is not a valid key, thus, we take a dummy value
@@ -248,20 +246,26 @@ function Teekesselchen.new(context)
   		local keywordObj
   		
   		-- get the keyword and create a smart collection if necessary
+  		
   		catalog:withWriteAccessDo("createKeyword", function()
   			if doLog then
 	  			logger:debug("Using keyword " .. settings.keywordName .. " as mark")
 	  		end
 	  		keywordObj = catalog:createKeyword(settings.keywordName, nil, false, nil, true)
-  			if settings.useSmartCollection then
+  		end)
+  		if settings.useSmartCollection then
+  			local collection
+  			catalog:withWriteAccessDo("createCollection", function()
   				if doLog then
   					logger:debug("Using smart collection " .. settings.smartCollectionName)
   				end
-  				local collection = catalog:createSmartCollection(settings.smartCollectionName, {
+  				collection = catalog:createSmartCollection(settings.smartCollectionName, {
 		    		criteria = "keywords",
 		    		operation = "words",
 		    		value = settings.keywordName,
 				}, nil, true)
+			end)
+			catalog:withWriteAccessDo("cleanCollection", function()
 				-- removes the existing photos from the smart collection
 				if collection and settings.cleanSmartCollection then
 					for i,oldPhoto in ipairs(collection:getPhotos()) do
@@ -271,10 +275,9 @@ function Teekesselchen.new(context)
 						end
 						oldPhoto:removeKeyword(keywordObj)
 					end
-				end
-			end
-		end)
-	  	
+				end			
+			end)
+	  	end
 	  	-- build the comparator chain
 	  	local act = markDuplicateEnv(settings, keywordObj)
 	  	if settings.useExifTool then
