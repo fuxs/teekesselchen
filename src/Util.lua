@@ -65,14 +65,13 @@ function Util.implode(d,p)
 end
 
 function Util.getExifToolCmd(parameters)
-	local cmd
 	if WIN_ENV then
-		cmd = "exiftool.exe"
+		return LrPathUtils.child( _PLUGIN.path, "exiftool.exe") .. " " .. parameters
 	else
 		-- must be mac
-		cmd = "exiftool"
+		return "'" .. LrPathUtils.child( _PLUGIN.path, "exiftool") .. "' " .. parameters
 	end
-	return '"' .. LrPathUtils.child( _PLUGIN.path, cmd) .. '" ' .. parameters
+	
 end
 
 function Util.getTempPath(name)
