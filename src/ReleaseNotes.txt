@@ -1,8 +1,10 @@
 Release Notes
 
-V1.3 released on 10th of Apr 2013
+V1.3 released on 12th of Apr 2013
 Bug fix:
-- Collection creation in combination with the clean up option caused an error
+- Collection creation in combination with the clean up option caused an error. This is
+fixed.
+- The ignore keywords checkbox was not recognized. This is fixed.
 
 Improvementes:
 - Integrates now exiftool to get more details about the photos. Sequential shootings
