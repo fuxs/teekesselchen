@@ -172,7 +172,7 @@ local function showFindDuplicatesDialog()
 								tooltip = "Click on me to open help in browser.",
 								font = "<system/small>",
 								mouse_down = function(o)
-									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_1/en/summary.php")
+									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_3/en/summary.php")
 								end
 							},
 						},
@@ -295,7 +295,7 @@ local function showFindDuplicatesDialog()
 								tooltip = "Click on me to open help in browser.",
 								font = "<system/small>",
 								mouse_down = function(o)
-									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_1/en/marks.php")
+									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_3/en/marks.php")
 								end
 							},
 						},
@@ -449,7 +449,7 @@ local function showFindDuplicatesDialog()
 							tooltip = "Click on me to open help in browser.",
 							font = "<system/small>",
 							mouse_down = function(o)
-							LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_1/en/rules.php")
+							LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_3/en/rules.php")
 							end
 						},
 				},
@@ -533,7 +533,7 @@ local function showFindDuplicatesDialog()
 								tooltip = "Click on me to open help in browser.",
 								font = "<system/small>",
 								mouse_down = function(o)
-									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_1/en/about.php")
+									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_3/en/about.php")
 								end
 							},
 						},

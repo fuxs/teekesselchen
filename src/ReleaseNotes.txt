@@ -6,10 +6,10 @@ Bug fix:
 fixed.
 - The ignore keywords checkbox was not recognized. This is fixed.
 
-Improvementes:
+Improvements:
 - Integrates now exiftool to get more details about the photos. Sequential shootings
 tend to produce duplicates because of the time resolution based on seconds. Now 
-Teekesselchen can read data which is not provided by Lightroom itself, e.g. the sub-second
+Teekesselchen can read data, which is not provided by Lightroom itself, e.g. the sub-second
 or the sequence number.
 
 V1.2 released on 3rd of Mar 2013
