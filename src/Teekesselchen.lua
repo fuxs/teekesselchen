@@ -105,7 +105,7 @@ local function getExifToolData(settings)
 	local logger = _G.logger
 	return function(photo)
 		local path = photo:getRawMetadata("path")
-		local cmdLine = cmd .. " '" .. path .."' > '" .. temp .. "'"
+		local cmdLine = cmd .. ' "' .. path ..'" > "' .. temp .. '"'
 		local value
 		if LrTasks.execute(cmdLine) == 0 then
 			value = LrFileUtils.readFile(temp)
