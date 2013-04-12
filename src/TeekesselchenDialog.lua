@@ -152,7 +152,7 @@ local function showFindDuplicatesDialog()
 						},
 						f:static_text {
 							title = "Potential duplicates are checked with ExifTool.",
-							visible = LrView.bind("useFlag"),
+							visible = LrView.bind("useExifTool"),
 						},
 						f:push_button {
 							title = "Reset to Defaults",
