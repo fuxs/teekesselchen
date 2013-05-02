@@ -172,7 +172,7 @@ local function showFindDuplicatesDialog()
 								tooltip = "Click on me to open help in browser.",
 								font = "<system/small>",
 								mouse_down = function(o)
-									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_3/en/summary.php")
+									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_4/en/summary.php")
 								end
 							},
 						},
@@ -295,7 +295,7 @@ local function showFindDuplicatesDialog()
 								tooltip = "Click on me to open help in browser.",
 								font = "<system/small>",
 								mouse_down = function(o)
-									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_3/en/marks.php")
+									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_4/en/marks.php")
 								end
 							},
 						},
@@ -379,7 +379,33 @@ local function showFindDuplicatesDialog()
 									f:checkbox {
 										title = "Capture Date",
 										value = LrView.bind("useCaptureDate"),
-										enabled = false,
+										-- enabled = false,
+									},
+								},
+							},
+							f:row {
+								fill_vertical = 1,
+								spacing = f:control_spacing(),
+								f:group_box {
+									title = "File",
+									fill_horizontal = 1,
+									spacing = f:control_spacing(),
+										f:checkbox {
+										title = "File name",
+										value = LrView.bind("useFileName"),
+									},
+									f:checkbox {
+										title = "File size",
+										value = LrView.bind("useFileSize"),
+									},
+								},
+								f:group_box {
+									title = "Type",
+									fill_horizontal = 1,
+									fill_vertical = 1,
+									f:checkbox {
+										title = "File type",
+										value = LrView.bind("useFileType"),
 									},
 								},
 							},
@@ -449,7 +475,7 @@ local function showFindDuplicatesDialog()
 							tooltip = "Click on me to open help in browser.",
 							font = "<system/small>",
 							mouse_down = function(o)
-							LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_3/en/rules.php")
+							LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_4/en/rules.php")
 							end
 						},
 				},
@@ -462,7 +488,7 @@ local function showFindDuplicatesDialog()
 						fill_horizontal = 1,
 						spacing = f:control_spacing(),
 						f:static_text {
-							title = "Teekesselchen V1.3",
+							title = "Teekesselchen V1.4",
 						},
 						f:static_text {
 							title = "Copyright (C) 2013  Michael Bungenstock",
@@ -533,7 +559,7 @@ local function showFindDuplicatesDialog()
 								tooltip = "Click on me to open help in browser.",
 								font = "<system/small>",
 								mouse_down = function(o)
-									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_3/en/about.php")
+									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_4/en/about.php")
 								end
 							},
 						},
@@ -541,7 +567,7 @@ local function showFindDuplicatesDialog()
 			}
 			
 			local result = LrDialogs.presentModalDialog({
-				title = "Teekesselchen V1.3: Find Duplicates",
+				title = "Teekesselchen V1.4: Find Duplicates",
 				contents = contents,
 				actionVerb = "Find Duplicates",
 				otherVerb = "Save",
@@ -565,15 +591,28 @@ local function showFindDuplicatesDialog()
 					-- is a collection name provided?
 					if p.useSmartCollection and string.len(Util.trim(p.smartCollectionName)) == 0 then
 						if errors then
-							msg = msg .. " and a smart collection name"
+							msg = msg .. " and a smart collection name (Open the tab 'Marks')."
 						else
-							msg = "Please provide a smart collection name"
+							msg = "Please provide a smart collection name (Open the tab 'Marks')."
 							errors = true
 						end
 					end
-					-- finish the sentence
+					-- check the rules
+					if not (p.useExifTool or p.useGPSAltitude or p.useGPS or
+						p.useExposureBias or p.useAperture or p.useShutterSpeed or
+						p.useIsoRating or p.useLens or p.useSerialNumber or
+						p.useModel or p.useMake or p.useFileName or
+						p.useFileSize or p.useFileType or p.useCaptureDate) then
+						if errors then
+							msg = msg .. " Please provide at least one rule attribute (Open the tab 'Rules')."
+						else
+							msg = " Please provide at least one rule attribute (Open the tab 'Rules')."
+							errors = true
+						end
+					end
+					-- show the dialog
 					if errors then
-						LrDialogs.showError(msg .. " (Open the tab 'Marks').")
+						LrDialogs.message("Ups, something is wrong with your settings.", msg)
 					end
 					configuration.copyFrom(p)
 					configuration.write()

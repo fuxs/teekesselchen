@@ -1,5 +1,10 @@
 Release Notes
 
+V1.4 released on 2nd of May 2013
+Improvements:
+- Allows now the comparison of file size, name and type
+- The capture time can now be deselected
+
 V1.3 released on 12th of Apr 2013
 Bug fix:
 - Collection creation in combination with the clean up option caused an error. This is

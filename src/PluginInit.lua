@@ -31,7 +31,7 @@ local LrLogger = import "LrLogger"
 require "Configuration"
 require "Updater"
 
-_G.CURRENT_VERSION = 1.3
+_G.CURRENT_VERSION = 1.4
 _G.configuration = Configuration.new()
 -- Load configuration for this plugin
 local settings = _G.configuration.settings

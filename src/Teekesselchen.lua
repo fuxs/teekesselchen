@@ -286,7 +286,12 @@ function Teekesselchen.new(context)
 				logger:debug("findDuplicates: using exifTool")
 			end
 	  	end
-		act = comperatorEnv("dateTimeOriginal", act)
+	  	if settings.useCaptureDate then
+			act = comperatorEnv("dateTimeOriginal", act)
+			if doLog then
+				logger:debug("findDuplicates: using dateTimeOriginal")
+			end
+		end
 		if settings.useGPSAltitude then
 			act = comperatorEnv("gpsAltitude", act)
 			if doLog then
@@ -345,6 +350,27 @@ function Teekesselchen.new(context)
 			act = comperatorEnv("cameraMake", act)
 			if doLog then
 				logger:debug("findDuplicates: using exposureBias")
+			end
+		end
+		
+		if settings.useFileName then
+			act = comperatorEnv("fileName", act)
+			if doLog then
+				logger:debug("findDuplicates: using fileName")
+			end
+		end
+		
+		if settings.useFileSize then
+			act = comperatorEnv("fileSize", act)
+			if doLog then
+				logger:debug("findDuplicates: using fileSize")
+			end
+		end
+		
+		if settings.useFileType then
+			act = comperatorEnv("fileType", act)
+			if doLog then
+				logger:debug("findDuplicates: using fileType")
 			end
 		end
   	
