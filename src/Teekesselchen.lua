@@ -88,7 +88,7 @@ local function markDuplicateEnv(settings, keyword)
 					local ratingHead = tree[1]:getRawMetadata("rating")
 					local ratingNew = photo:getRawMetadata("rating")
 					if ratingHead == nil then ratingHead = 0 end
-					if newHead == nil then newHead = 0 end
+					if ratingNew == nil then ratingNew = 0 end
 					if ratingNew > ratingHead then
 						changeOrder(tree,photo)
 						return true
