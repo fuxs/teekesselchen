@@ -33,9 +33,24 @@ local LrFileUtils = import "LrFileUtils"
 
 require "Util"
 
+local function changeOrder(tree,photo)
+	-- first element is now rejected
+	tree[1]:setRawMetadata("pickStatus", -1)
+	-- move the first element to the end
+	table.insert(tree, tree[1])
+	-- this one is good
+	photo:setRawMetadata("pickStatus", 0)
+	-- replace first element
+	tree[1] = photo
+end
+
 local function markDuplicateEnv(settings, keyword)
 	local iVC = settings.ignoreVirtualCopies
 	local uF = settings.useFlag
+	local pRaw = settings.preferRaw
+	local pL = settings.preferLarge
+	local pR = settings.preferRating
+	
 	return function(tree, photo)
 		if #tree == 0 then
 			-- this is easy. just add the photo to the empty list
@@ -43,54 +58,58 @@ local function markDuplicateEnv(settings, keyword)
 			return false
 		else
 			-- this list is not empty, thus, we have a duplicate!
-			local needsUpdate = false
-			local headIsVirtual = false
-		
-			-- deal with virtual copies
-			if (not iVC) then
-				-- Is the first entry a virtual copy?
-				headIsVirtual = tree[1]:getRawMetadata("isVirtualCopy")
-				if headIsVirtual then
-					-- if the passed photo is not a virtual copy then we want to make it the
-					-- first element in the list
-					if not photo:getRawMetadata("isVirtualCopy") then
-						-- save the first element
-						local aux = tree[1]
-						-- make the current photo the first element
-						tree[1] = photo
-					
-						photo = aux
-						headIsVirtual = false
-						needsUpdate = true
-					end
-				end
-			end
-			if #tree == 1 or needsUpdate then
+			-- mark current photo as duplicate
+			photo:addKeyword(keyword)
+			-- if this is the second element then mark the first element as duplicate, too
+			if #tree == 1 then
 				tree[1]:addKeyword(keyword)
 			end
-			photo:addKeyword(keyword)
-			-- or a flag?
 			if uF then
+				-- deal with raw preference
+				if pRaw then
+					if tree[1]:getRawMetadata("fileFormat") ~= "RAW" then
+						if photo:getRawMetadata("fileFormat") == "RAW" then
+							changeOrder(tree,photo)
+							return true
+						end
+					end
+				end
+				-- deal with file size
+				if pL then
+					local sizeHead = tree[1]:getRawMetadata("fileSize")
+					local sizeNew = photo:getRawMetadata("fileSize")
+					if sizeNew > sizeHead then
+						changeOrder(tree,photo)
+						return true
+					end
+				end
+				-- deal with rating
+				if pR then
+					local ratingHead = tree[1]:getRawMetadata("rating")
+					local ratingNew = photo:getRawMetadata("rating")
+					if ratingHead == nil then ratingHead = 0 end
+					if newHead == nil then newHead = 0 end
+					if ratingNew > ratingHead then
+						changeOrder(tree,photo)
+						return true
+					end
+				end
+				-- deal with virtual copies
+				if not iVC then
+					if tree[1]:getRawMetadata("isVirtualCopy") then
+						if not photo:getRawMetadata("isVirtualCopy") then
+							changeOrder(tree,photo)
+							return true
+						end
+					end
+				end
+				-- set the flag
+				photo:setRawMetadata("pickStatus", -1)
 				-- remove revoke flag if necessary
-				if #tree == 1 or needsUpdate then
+				if #tree == 1 then
 					tree[1]:setRawMetadata("pickStatus", 0)
 				end
-				photo:setRawMetadata("pickStatus", -1)
 			end
-			-- or with metadata
-			--[[if settings.useMetadata then
-				local uuid
-				if headIsVirtual then
-					-- the first element is still virtual
-					uuid = tree[1]:getRawMetadata("masterPhoto"):getRawMetadata("uuid")
-				else
-					uuid = tree[1]:getRawMetadata("uuid")
-				end
-				if #tree == 1 or needsUpdate then
-					tree[1]:setPropertyForPlugin(_PLUGIN, "duplicate_uuid", uuid)
-				end
-				photo:setPropertyForPlugin(_PLUGIN, "duplicate_uuid", uuid)
-			end]]
 			table.insert(tree, photo)
 			return true
 		end

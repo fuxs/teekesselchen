@@ -1,5 +1,10 @@
 Release Notes
 
+V1.5 released on 30th of May 2013
+Improvements:
+- Supports now the order of how photos are marked as rejected. It is possible to prefer
+photos in RAW format, by size and by rating.
+
 V1.4 released on 2nd of May 2013
 Improvements:
 - Allows now the comparison of file size, name and type

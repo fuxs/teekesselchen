@@ -59,7 +59,10 @@ function Configuration.new()
 				exifToolParameters = "-SequenceNumber -SubSecTime",
 				useFileName = false,
 				useFileSize = false,
-				useFileType = false
+				useFileType = false,
+				preferRaw = false,
+				preferLarge = false,
+				preferRating = false
 	}
 	local prefs = LrPrefs.prefsForPlugin()
 	local aux = prefs.settings
