@@ -64,27 +64,43 @@ local function markDuplicateEnv(settings, keyword)
 			if #tree == 1 then
 				tree[1]:addKeyword(keyword)
 			end
+			local continueOrder = true -- eg. if size has been found < to head, set to false and don't try further order changes that could fuck it up.
 			if uF then
 				-- deal with raw preference
 				if pRaw then
-					if tree[1]:getRawMetadata("fileFormat") ~= "RAW" then
-						if photo:getRawMetadata("fileFormat") == "RAW" then
+					local HisRaw, NisRaw = tree[1]:getRawMetadata("fileFormat")=="RAW", photo:getRawMetadata("fileFormat")=="RAW"
+					if  not HisRaw and NisRaw then
 							changeOrder(tree,photo)
 							return true
-						end
 					end
+					continueOrder = (HisRaw == NisRaw)
 				end
 				-- deal with file size
-				if pL then
+				if pL and continueOrder then
 					local sizeHead = tree[1]:getRawMetadata("fileSize")
 					local sizeNew = photo:getRawMetadata("fileSize")
-					if sizeNew > sizeHead then
-						changeOrder(tree,photo)
-						return true
+					local function getMP(p) -- get MegaPixels count from photo
+						local l = {}
+						p:getFormattedMetadata("dimensions"):gsub("(%d+)%s*x%s*(%d+)", function (x,y) table.insert(l,x*y*1e-6) end)
+						return l[1]
 					end
-				end
-				-- deal with rating
-				if pR then
+					local MPhead, MPNew = getMP(tree[1]), getMP(photo)
+					if MPhead and MPNew then
+						if MPNew > MPhead then
+							changeOrder(tree, photo)
+							return true
+						end
+						continueOrder = (MPhead==MPNew)
+					else if sizeNew and sizeNew > sizeHead then
+							changeOrder(tree,photo)
+							return true
+						else if sizeNew then 
+							continueOrder = (sizeNew == sizeHead)
+							end
+						end
+					end
+				end				-- deal with rating
+				if pR and continueOrder then
 					local ratingHead = tree[1]:getRawMetadata("rating")
 					local ratingNew = photo:getRawMetadata("rating")
 					if ratingHead == nil then ratingHead = 0 end
@@ -95,7 +111,7 @@ local function markDuplicateEnv(settings, keyword)
 					end
 				end
 				-- deal with virtual copies
-				if not iVC then
+				if not iVC and continueOrder then
 					if tree[1]:getRawMetadata("isVirtualCopy") then
 						if not photo:getRawMetadata("isVirtualCopy") then
 							changeOrder(tree,photo)
