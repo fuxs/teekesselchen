@@ -1,4 +1,4 @@
-Teekesselchen V1.5
+Teekesselchen V1.6
 ==================
 Please refer to http://www.bungenstock.de/teekesselchen/ to get more information and
 documentation.
@@ -26,4 +26,4 @@ Plug-in  http://www.bungenstock.de/teekesselchen/doc/v1_1/en/summary.php
 License
 ----------
 Open the tab "About" in the plug-in
-(http://www.bungenstock.de/teekesselchen/doc/v1_5/en/about.php).
+(http://www.bungenstock.de/teekesselchen/doc/v1_6/en/about.php).

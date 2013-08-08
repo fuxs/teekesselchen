@@ -24,7 +24,26 @@ Util.lua
 
 local LrPathUtils = import "LrPathUtils"
 
+local alphas = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"}
+
 Util = {}
+
+function Util.numToAlpha(num)	
+	local result = ""
+	while num > 0 do
+		result = alphas[math.fmod(num,26) + 1] .. result
+		num = math.floor(num / 26)
+	end
+	return result
+end
+
+function Util.startsWith(str,start)
+   return string.sub(str,1,string.len(start))==start
+end
+
+function Util.endsWith(str,ende)
+   return ende=='' or string.sub(str,-string.len(ende))==ende
+end
 
 --[[
 	Removes initial and trailing whitespaces

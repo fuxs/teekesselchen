@@ -137,6 +137,7 @@ local function showFindDuplicatesDialog()
 							
 						},
 						
+						
 --[[						f:static_text {
 							title = "Duplicates are marked with duplicate id metadata",
 							visible = LrView.bind("useMetadata"),
@@ -153,6 +154,15 @@ local function showFindDuplicatesDialog()
 						f:static_text {
 							title = "Potential duplicates are checked with ExifTool.",
 							visible = LrView.bind("useExifTool"),
+						},
+						f:static_text {
+							title = "I will use and CHANGE labels for better sort results!",
+							visible = LrView.bind("useLabels"),
+						},
+						f:static_text {
+							title = "Deactivate this option in the Marks tab if you use labels on your own.",
+							font = { name = "Helvetica Light", size = 10},
+							visible = LrView.bind("useLabels"),
 						},
 						f:push_button {
 							title = "Reset to Defaults",
@@ -172,7 +182,7 @@ local function showFindDuplicatesDialog()
 								tooltip = "Click on me to open help in browser.",
 								font = "<system/small>",
 								mouse_down = function(o)
-									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_5/en/summary.php")
+									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_6/en/summary.php")
 								end
 							},
 						},
@@ -240,24 +250,66 @@ local function showFindDuplicatesDialog()
 								value = LrView.bind("useFlag"),
 								enabled = supportsFlag,
 							},
+							f:checkbox {
+								title = "Abuse color labels for sorting. This changes your labels.",
+								value = LrView.bind("useLabels"),
+								enabled = LrView.bind "useFlag",
+							},
 							f:group_box {
 								title = "Order",
 								fill_horizontal = 1,
 								spacing = f:control_spacing(),
-								f:checkbox {
-									title = "Prefer RAW files",
-									value = LrView.bind("preferRaw"),
-									enabled = LrView.bind "useFlag",
+								f:row {
+									f:checkbox {
+										title = "Prefer RAW files",
+										value = LrView.bind("preferRaw"),
+										enabled = LrView.bind "useFlag",
+										width = LrView.share("prefer_width"),
+									},
+									f:edit_field {
+										value = LrView.bind("preferRawPos"),
+										width_in_chars = 2,
+										validate = teekesselchen.check_numberValue,
+									},
 								},
-								f:checkbox {
-									title = "Prefer larger files",
-									value = LrView.bind("preferLarge"),
-									enabled = LrView.bind "useFlag",
+								f:row {
+									f:checkbox {
+										title = "Prefer larger files",
+										value = LrView.bind("preferLarge"),
+										enabled = LrView.bind "useFlag",
+										width = LrView.share("prefer_width"),
+									},
+									f:edit_field {
+										value = LrView.bind("preferLargePos"),
+										width_in_chars = 2,
+										validate = teekesselchen.check_numberValue,
+									},
 								},
-								f:checkbox {
-									title = "Prefer rated files",
-									value = LrView.bind("preferRating"),
-									enabled = LrView.bind "useFlag",
+								f:row {
+									f:checkbox {
+										title = "Prefer higher dimension files",
+										value = LrView.bind("preferDimension"),
+										enabled = LrView.bind "useFlag",
+										width = LrView.share("prefer_width"),
+									},
+									f:edit_field {
+										value = LrView.bind("preferDimensionPos"),
+										width_in_chars = 2,
+										validate = teekesselchen.check_numberValue,
+									},
+								},
+								f:row {
+									f:checkbox {
+										title = "Prefer higher rated files",
+										value = LrView.bind("preferRating"),
+										enabled = LrView.bind "useFlag",
+										width = LrView.share("prefer_width"),
+									},
+									f:edit_field {
+										value = LrView.bind("preferRatingPos"),
+										width_in_chars = 2,
+										validate = teekesselchen.check_numberValue,
+									},
 								},
 							},
 --						},
@@ -316,7 +368,7 @@ local function showFindDuplicatesDialog()
 								tooltip = "Click on me to open help in browser.",
 								font = "<system/small>",
 								mouse_down = function(o)
-									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_5/en/marks.php")
+									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_6/en/marks.php")
 								end
 							},
 						},
@@ -402,6 +454,18 @@ local function showFindDuplicatesDialog()
 										value = LrView.bind("useCaptureDate"),
 										-- enabled = false,
 									},
+									f:checkbox {
+										title = "Or Scan Date",
+										value = LrView.bind("useScanDate"),
+										enabled = LrView.bind "useCaptureDate",
+										-- enabled = false,
+									},
+									f:checkbox {
+										title = "Skip When Empty",
+										value = LrView.bind("ignoreEmptyCaptureDate"),
+										enabled = LrView.bind "useCaptureDate",
+										-- enabled = false,
+									},
 								},
 							},
 							f:row {
@@ -411,7 +475,7 @@ local function showFindDuplicatesDialog()
 									title = "File",
 									fill_horizontal = 1,
 									spacing = f:control_spacing(),
-										f:checkbox {
+									f:checkbox {
 										title = "File name",
 										value = LrView.bind("useFileName"),
 									},
@@ -496,7 +560,7 @@ local function showFindDuplicatesDialog()
 							tooltip = "Click on me to open help in browser.",
 							font = "<system/small>",
 							mouse_down = function(o)
-							LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_5/en/rules.php")
+							LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_6/en/rules.php")
 							end
 						},
 				},
@@ -509,7 +573,7 @@ local function showFindDuplicatesDialog()
 						fill_horizontal = 1,
 						spacing = f:control_spacing(),
 						f:static_text {
-							title = "Teekesselchen V1.5",
+							title = "Teekesselchen V1.6",
 						},
 						f:static_text {
 							title = "Copyright (C) 2013  Michael Bungenstock",
@@ -580,7 +644,7 @@ local function showFindDuplicatesDialog()
 								tooltip = "Click on me to open help in browser.",
 								font = "<system/small>",
 								mouse_down = function(o)
-									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_5/en/about.php")
+									LrHttp.openUrlInBrowser("http://www.bungenstock.de/teekesselchen/doc/v1_6/en/about.php")
 								end
 							},
 						},
@@ -588,7 +652,7 @@ local function showFindDuplicatesDialog()
 			}
 			
 			local result = LrDialogs.presentModalDialog({
-				title = "Teekesselchen V1.5: Find Duplicates",
+				title = "Teekesselchen V1.6: Find Duplicates",
 				contents = contents,
 				actionVerb = "Find Duplicates",
 				otherVerb = "Save",

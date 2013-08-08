@@ -34,83 +34,177 @@ local LrFileUtils = import "LrFileUtils"
 require "Util"
 
 local function changeOrder(tree,photo)
+	local labelNumber = tree[1]
+	local photoList = tree[2]
+	local header = photoList[1]
 	-- first element is now rejected
-	tree[1]:setRawMetadata("pickStatus", -1)
+	header:setRawMetadata("pickStatus", -1)
+	if labelNumber > 0 then
+		header:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
+	end
 	-- move the first element to the end
-	table.insert(tree, tree[1])
+	table.insert(photoList, header)	
 	-- this one is good
 	photo:setRawMetadata("pickStatus", 0)
+	if labelNumber > 0 then
+		photo:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_keep")
+	end
 	-- replace first element
-	tree[1] = photo
+	photoList[1] = photo
 end
 
-local function markDuplicateEnv(settings, keyword)
+local function insertFlaggedPhoto(tree,photo)
+	local labelNumber = tree[1]
+	local photoList = tree[2]
+	local header = photoList[1]
+	photo:setRawMetadata("pickStatus", -1)
+	if labelNumber > 0 then
+		photo:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
+	end
+	-- remove revoke flag if necessary
+	if #tree == 1 then
+		header:setRawMetadata("pickStatus", 0)
+		if labelNumber > 0 then
+			header:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_keep")
+		end
+	end
+	table.insert(photoList, photo)
+end
+
+local function preferRAW(tree,photo)
+	local photoList = tree[2]
+	local header = photoList[1]
+	local headRAW = header:getRawMetadata("fileFormat") == "RAW"
+	local photoRAW = photo:getRawMetadata("fileFormat") == "RAW"
+	if headRaw then
+		insertFlaggedPhoto(tree,photo)
+		return true
+	else
+		if photoRAW then
+			changeOrder(tree,photo)
+			return true
+		end
+	end
+	return false
+end
+
+local function preferLarge(tree,photo)
+	local photoList = tree[2]
+	local header = photoList[1]
+	local sizeHead = header:getRawMetadata("fileSize")
+	local sizeNew = photo:getRawMetadata("fileSize")
+	if sizeNew < sizeHead then
+		insertFlaggedPhoto(tree,photo)
+		return true
+	else
+		if sizeNew > sizeHead then
+			changeOrder(tree,photo)
+			return true
+		end
+	end
+	return false
+end
+
+local function preferDimension(tree,photo)
+	local photoList = tree[2]
+	local header = photoList[1]
+	local auxHead = header:getRawMetadata("dimensions")
+	local auxNew = photo:getRawMetadata("dimensions")
+	local dimHead = nil
+	local dimNew = nil
+	if auxHead then
+		dimHead = auxHead.width * auxHead.height
+	end
+	if auxNew then
+		dimNew = auxNew.width * auxNew.height
+	end
+	if dimNew < dimHead then
+		insertFlaggedPhoto(tree,photo)
+		return true
+	else
+		if dimNew > dimHead then
+			changeOrder(tree,photo)
+			return true
+		end
+	end
+	return false
+end
+
+local function preferRating(tree,photo)
+	local photoList = tree[2]
+	local header = photoList[1]
+	local ratingHead = header:getRawMetadata("rating")
+	local ratingNew = photo:getRawMetadata("rating")
+	if ratingHead == nil then ratingHead = 0 end
+	if ratingNew == nil then ratingNew = 0 end
+	if ratingNew < ratingHead then
+		insertFlaggedPhoto(tree,photo)
+		return true
+	else
+		if ratingNew > ratingHead then
+			changeOrder(tree,photo)
+			return true
+		end
+	end
+	return false
+end
+
+local function markDuplicateEnv(settings, keyword, sortingArray)
 	local iVC = settings.ignoreVirtualCopies
 	local uF = settings.useFlag
 	local pRaw = settings.preferRaw
 	local pL = settings.preferLarge
 	local pR = settings.preferRating
+	local uL = settings.useLabels
+	local duplicateNumber = 1
 	
 	return function(tree, photo)
 		if #tree == 0 then
 			-- this is easy. just add the photo to the empty list
-			table.insert(tree, photo)
+			table.insert(tree, 0)
+			table.insert(tree, {photo})
 			return false
 		else
 			-- this list is not empty, thus, we have a duplicate!
 			-- mark current photo as duplicate
-			photo:addKeyword(keyword)
+			photo:addKeyword(keyword)			
 			-- if this is the second element then mark the first element as duplicate, too
-			if #tree == 1 then
-				tree[1]:addKeyword(keyword)
+			local photoList = tree[2]
+			local header = photoList[1]
+			if #photoList == 1 then
+				if uL then
+					tree[1] = duplicateNumber
+					duplicateNumber = duplicateNumber + 1
+				end
+				header:addKeyword(keyword)
 			end
 			if uF then
-				-- deal with raw preference
-				if pRaw then
-					if tree[1]:getRawMetadata("fileFormat") ~= "RAW" then
-						if photo:getRawMetadata("fileFormat") == "RAW" then
-							changeOrder(tree,photo)
-							return true
-						end
-					end
-				end
-				-- deal with file size
-				if pL then
-					local sizeHead = tree[1]:getRawMetadata("fileSize")
-					local sizeNew = photo:getRawMetadata("fileSize")
-					if sizeNew > sizeHead then
-						changeOrder(tree,photo)
-						return true
-					end
-				end
-				-- deal with rating
-				if pR then
-					local ratingHead = tree[1]:getRawMetadata("rating")
-					local ratingNew = photo:getRawMetadata("rating")
-					if ratingHead == nil then ratingHead = 0 end
-					if ratingNew == nil then ratingNew = 0 end
-					if ratingNew > ratingHead then
-						changeOrder(tree,photo)
-						return true
-					end
-				end
 				-- deal with virtual copies
 				if not iVC then
-					if tree[1]:getRawMetadata("isVirtualCopy") then
-						if not photo:getRawMetadata("isVirtualCopy") then
+					local isVirtualHead = header:getRawMetadata("isVirtualCopy")
+					local isOrigNew = not photo:getRawMetadata("isVirtualCopy")
+					if isVirtualHead then
+						insertFlaggedPhoto(tree,photo)
+					else
+						if not isVirtNew then
 							changeOrder(tree,photo)
+							duplicateNumber = duplicateNumber + 1
 							return true
 						end
 					end
 				end
-				-- set the flag
-				photo:setRawMetadata("pickStatus", -1)
-				-- remove revoke flag if necessary
-				if #tree == 1 then
-					tree[1]:setRawMetadata("pickStatus", 0)
+				-- do some sorting
+				for i,preferFunc in ipairs(sortingArray) do
+					if preferFunc(tree,photo) then
+						return true
+					end
 				end
+				-- if we reach this point then no sorting happened
+				insertFlaggedPhoto(tree,photo)
+			else
+				-- just add the new photo
+				table.insert(photoList, photo)
 			end
-			table.insert(tree, photo)
 			return true
 		end
 	end
@@ -173,11 +267,41 @@ local function exifToolEnv(exifTool, marker)
 	end
 end
 
-local function comperatorEnv(name, comp)
+local function comperatorEnv(name, comp, mandatory)
 	return function(tree, photo)
 		local value = photo:getFormattedMetadata(name)
 		-- nil is not a valid key, thus, we take a dummy value
-    	if not value then value = "123" .. name .. "456" end
+    	if not value then
+    		if mandatory then
+    			return false
+    		else
+    			value = "123" .. name .. "456"
+    		end
+    	end
+    	-- does the entry already exists?
+    	local sub = tree[value]
+		if not sub then
+ 			sub = {}
+   			tree[value] = sub
+		end
+    	return comp(sub, photo)
+	end
+end
+
+local function comperatorEnvAlternative(name, altName, comp, mandatory)
+	return function(tree, photo)
+		local value = photo:getFormattedMetadata(name)
+		if not value then
+			value = photo:getFormattedMetadata(altName)
+		end
+		-- nil is not a valid key, thus, we take a dummy value
+    	if not value then
+    		if mandatory then
+    			return false
+    		else
+    			value = "123" .. name .. "456"
+    		end
+    	end
     	-- does the entry already exists?
     	local sub = tree[value]
 		if not sub then
@@ -241,6 +365,14 @@ function Teekesselchen.new(context)
 		return true, value
 	end
 	
+	function self.check_numberValue(view,value)
+		local num = tonumber(value)
+		if num == nil then
+			return false, value, value .. " is not a number. Please enter a valid number, e.g. 3"
+		end
+		return true, value
+	end
+	
 	function self.checkKeywordValue(view,value)
 		local str = Util.trim(value)
 		if string.len(str) == 0 then
@@ -297,8 +429,60 @@ function Teekesselchen.new(context)
 				end			
 			end)
 	  	end
+	  	
+	  	-- construct the array for the sorting
+		local sortingArray = {}
+		
+		if settings.useFlag then
+			local sortingTable = {}
+			local pos
+			if settings.preferRaw then
+				pos = tonumber(settings.preferRawPos)
+				if pos >= 0 then
+					sortingTable[pos] = preferRAW
+				end
+			end
+			if settings.preferLarge then
+				pos = tonumber(settings.preferLargePos)
+				if pos >= 0 then
+					while sortingTable[pos] do
+						pos = pos + 1
+					end
+					sortingTable[pos] = preferLarge
+				end
+			end
+			if settings.preferDimension then
+				pos = tonumber(settings.preferDimensionPos)
+				if pos >= 0 then
+					while sortingTable[pos] do
+						pos = pos + 1
+					end
+					sortingTable[pos] = preferDimension
+				end
+			end
+			if settings.preferRating then
+				pos = tonumber(settings.preferRatingPos)
+				if pos >= 0 then
+					while sortingTable[pos] do
+						pos = pos + 1
+					end
+					sortingTable[pos] = preferRating
+				end
+			end
+			local auxArray = {}
+			for n in pairs(sortingTable) do
+				table.insert(auxArray, n)
+			end
+			table.sort(auxArray)
+			
+			for i,v in ipairs(auxArray) do
+				table.insert(sortingArray, sortingTable[v])
+			end
+			
+		end
+	  	
 	  	-- build the comparator chain
-	  	local act = markDuplicateEnv(settings, keywordObj)
+	  	local act = markDuplicateEnv(settings, keywordObj, sortingArray)
 	  	if settings.useExifTool then
 	  		act = exifToolEnv(getExifToolData(settings), act)
 	  		if doLog then
@@ -306,13 +490,21 @@ function Teekesselchen.new(context)
 			end
 	  	end
 	  	if settings.useCaptureDate then
-			act = comperatorEnv("dateTimeOriginal", act)
-			if doLog then
-				logger:debug("findDuplicates: using dateTimeOriginal")
+	  		local iE = settings.ignoreEmptyCaptureDate
+	  		if settings.useScanDate then
+				act = comperatorEnvAlternative("dateTimeOriginal", "dateTimeDigitized", act, iE)
+				if doLog then
+					logger:debug("findDuplicates: using dateTimeOriginal and dateTimeDigitized")
+				end
+			else
+				act = comperatorEnv("dateTimeOriginal", act, iE)
+				if doLog then
+					logger:debug("findDuplicates: using dateTimeOriginal")
+				end
 			end
 		end
 		if settings.useGPSAltitude then
-			act = comperatorEnv("gpsAltitude", act)
+			act = comperatorEnv("gpsAltitude", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using gpsAltitude")
 			end
@@ -324,70 +516,70 @@ function Teekesselchen.new(context)
 			end
 		end
 		if settings.useExposureBias then
-			act = comperatorEnv("exposureBias", act)
+			act = comperatorEnv("exposureBias", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using exposureBias")
 			end
 		end
 		if settings.useAperture then
-			act = comperatorEnv("aperture", act)
+			act = comperatorEnv("aperture", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using aperture")
 			end
 		end
 		if settings.useShutterSpeed then
-			act = comperatorEnv("shutterSpeed", act)
+			act = comperatorEnv("shutterSpeed", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using shutterSpeed")
 			end
 		end
 		if settings.useIsoRating then
-			act = comperatorEnv("isoSpeedRating", act)
+			act = comperatorEnv("isoSpeedRating", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using isoSpeedRating")
 			end
 		end
 		if settings.useLens then
-			act = comperatorEnv("lens", act)
+			act = comperatorEnv("lens", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using lens")
 			end
 		end
 		if settings.useSerialNumber then
-			act = comperatorEnv("cameraSerialNumber", act)
+			act = comperatorEnv("cameraSerialNumber", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using cameraSerialNumber")
 			end
 		end
 		if settings.useModel then
-			act = comperatorEnv("cameraModel", act)
+			act = comperatorEnv("cameraModel", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using cameraModel")
 			end
 		end
 		if settings.useMake then
-			act = comperatorEnv("cameraMake", act)
+			act = comperatorEnv("cameraMake", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using exposureBias")
 			end
 		end
 		
 		if settings.useFileName then
-			act = comperatorEnv("fileName", act)
+			act = comperatorEnv("fileName", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using fileName")
 			end
 		end
 		
 		if settings.useFileSize then
-			act = comperatorEnv("fileSize", act)
+			act = comperatorEnv("fileSize", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using fileSize")
 			end
 		end
 		
 		if settings.useFileType then
-			act = comperatorEnv("fileType", act)
+			act = comperatorEnv("fileType", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using fileType")
 			end
@@ -406,6 +598,7 @@ function Teekesselchen.new(context)
 		
 		local skipCounter = 0
 		local duplicateCounter = 0
+
   		catalog:withWriteAccessDo("findDuplicates", function()
   			for i=1,self.total do
   				-- do the interface stuff at the beginning

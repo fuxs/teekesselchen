@@ -36,7 +36,7 @@ function Configuration.new()
 				useMetadata = false,
 				useFlag = true,
 				useSmartCollection = true,
-				cleanSmartCollection = false,
+				cleanSmartCollection = true,
 				resetFlagSmartCollection = true,
 				smartCollectionName = "Duplicates",					
 				useCaptureDate = true,
@@ -55,14 +55,22 @@ function Configuration.new()
 				ignoreKeywords = "",
 				checkForUpdates = true,
 				activateLogging = false,
-				useExifTool = true,
+				useExifTool = false,
 				exifToolParameters = "-SequenceNumber -SubSecTime",
 				useFileName = false,
 				useFileSize = false,
 				useFileType = false,
-				preferRaw = false,
-				preferLarge = false,
-				preferRating = false
+				preferRaw = true,
+				preferLarge = true,
+				preferDimension = true,
+				preferRating = true,
+				preferRawPos = "1",
+				preferLargePos = "2",
+				preferDimensionPos = "3",
+				preferRatingPos = "4",
+				ignoreEmptyCaptureDate = true,
+				useScanDate = true,
+				useLabels = true
 	}
 	local prefs = LrPrefs.prefsForPlugin()
 	local aux = prefs.settings

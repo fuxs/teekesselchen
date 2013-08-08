@@ -1,5 +1,15 @@
 Release Notes
 
+V1.6 released on 8th of August 2013
+Bug fix:
+- The prefer logic for marked photos was not consistent. This is fixed.
+
+Improvements:
+- Supports labels for a more organized presentation of the duplicates.
+- Can now ignore photos with no caption date.
+- Some scanners use a different metadata field. This field can now be used as alternative
+- The prefer logic order can now be changed
+
 V1.5 released on 30th of May 2013
 Improvements:
 - Supports now the order of how photos are marked as rejected. It is possible to prefer
