@@ -399,7 +399,7 @@ local function showFindDuplicatesDialog()
 										value = LrView.bind("useModel"),
 									},
 									f:checkbox {
-										title = "Serial Number",
+										title = "Serial number",
 										value = LrView.bind("useSerialNumber"),
 									},
 									f:checkbox {
@@ -412,11 +412,11 @@ local function showFindDuplicatesDialog()
 									fill_horizontal = 1,
 									spacing = f:control_spacing(),
 									f:checkbox {
-										title = "Iso Rating",
+										title = "Iso rating",
 										value = LrView.bind("useIsoRating"),
 									},
 									f:checkbox {
-										title = "Shutter Speed",
+										title = "Shutter speed",
 										value = LrView.bind("useShutterSpeed"),
 									},
 									f:checkbox {
@@ -424,7 +424,7 @@ local function showFindDuplicatesDialog()
 									value = LrView.bind("useAperture"),
 									},
 									f:checkbox {
-										title = "Exposure Bias",
+										title = "Exposure bias",
 										value = LrView.bind("useExposureBias"),
 									},
 								},
@@ -450,18 +450,18 @@ local function showFindDuplicatesDialog()
 									fill_horizontal = 1,
 									fill_vertical = 1,
 									f:checkbox {
-										title = "Capture Date",
+										title = "Capture date",
 										value = LrView.bind("useCaptureDate"),
 										-- enabled = false,
 									},
 									f:checkbox {
-										title = "Or Scan Date",
+										title = "Or other dates",
 										value = LrView.bind("useScanDate"),
 										enabled = LrView.bind "useCaptureDate",
 										-- enabled = false,
 									},
 									f:checkbox {
-										title = "Skip When Empty",
+										title = "Skip when empty",
 										value = LrView.bind("ignoreEmptyCaptureDate"),
 										enabled = LrView.bind "useCaptureDate",
 										-- enabled = false,

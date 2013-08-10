@@ -35,45 +35,52 @@ require "Util"
 
 local function changeOrder(tree,photo)
 	local labelNumber = tree[1]
-	local photoList = tree[2]
-	local header = photoList[1]
+	local header = tree[2]
 	-- first element is now rejected
 	header:setRawMetadata("pickStatus", -1)
 	if labelNumber > 0 then
+	_G.logger:debugf("set label %s", "change TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
+
 		header:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
+	else
+	_G.logger:debugf("change no label!!!")
 	end
+	
 	-- move the first element to the end
-	table.insert(photoList, header)	
+	table.insert(tree, header)	
 	-- this one is good
 	photo:setRawMetadata("pickStatus", 0)
 	if labelNumber > 0 then
+	_G.logger:debugf("set label %s", "change TK#_" .. Util.numToAlpha(labelNumber) .. "_keep")
 		photo:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_keep")
 	end
 	-- replace first element
-	photoList[1] = photo
+	tree[2] = photo
 end
 
 local function insertFlaggedPhoto(tree,photo)
 	local labelNumber = tree[1]
-	local photoList = tree[2]
-	local header = photoList[1]
+	local header = tree[2]
 	photo:setRawMetadata("pickStatus", -1)
 	if labelNumber > 0 then
+	_G.logger:debugf("set label %s", "insert TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
 		photo:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
+	else
+	_G.logger:debugf("insert no label!!!")
 	end
 	-- remove revoke flag if necessary
-	if #tree == 1 then
+	if #tree == 2 then
 		header:setRawMetadata("pickStatus", 0)
 		if labelNumber > 0 then
+		_G.logger:debugf("set label %s", "insert TK#_" .. Util.numToAlpha(labelNumber) .. "_keep")
 			header:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_keep")
 		end
 	end
-	table.insert(photoList, photo)
+	table.insert(tree, photo)
 end
 
 local function preferRAW(tree,photo)
-	local photoList = tree[2]
-	local header = photoList[1]
+	local header = tree[2]
 	local headRAW = header:getRawMetadata("fileFormat") == "RAW"
 	local photoRAW = photo:getRawMetadata("fileFormat") == "RAW"
 	if headRaw then
@@ -89,10 +96,11 @@ local function preferRAW(tree,photo)
 end
 
 local function preferLarge(tree,photo)
-	local photoList = tree[2]
-	local header = photoList[1]
+	local header = tree[2]
 	local sizeHead = header:getRawMetadata("fileSize")
 	local sizeNew = photo:getRawMetadata("fileSize")
+	if sizeHead == nil then sizeHead = 0 end
+	if sizeNew == nil then sizeNew = 0 end
 	if sizeNew < sizeHead then
 		insertFlaggedPhoto(tree,photo)
 		return true
@@ -106,12 +114,11 @@ local function preferLarge(tree,photo)
 end
 
 local function preferDimension(tree,photo)
-	local photoList = tree[2]
-	local header = photoList[1]
+	local header = tree[2]
 	local auxHead = header:getRawMetadata("dimensions")
 	local auxNew = photo:getRawMetadata("dimensions")
-	local dimHead = nil
-	local dimNew = nil
+	local dimHead = 0
+	local dimNew = 0
 	if auxHead then
 		dimHead = auxHead.width * auxHead.height
 	end
@@ -131,8 +138,7 @@ local function preferDimension(tree,photo)
 end
 
 local function preferRating(tree,photo)
-	local photoList = tree[2]
-	local header = photoList[1]
+	local header = tree[2]
 	local ratingHead = header:getRawMetadata("rating")
 	local ratingNew = photo:getRawMetadata("rating")
 	if ratingHead == nil then ratingHead = 0 end
@@ -162,16 +168,15 @@ local function markDuplicateEnv(settings, keyword, sortingArray)
 		if #tree == 0 then
 			-- this is easy. just add the photo to the empty list
 			table.insert(tree, 0)
-			table.insert(tree, {photo})
+			table.insert(tree, photo)
 			return false
 		else
 			-- this list is not empty, thus, we have a duplicate!
 			-- mark current photo as duplicate
 			photo:addKeyword(keyword)			
 			-- if this is the second element then mark the first element as duplicate, too
-			local photoList = tree[2]
-			local header = photoList[1]
-			if #photoList == 1 then
+			local header = tree[2]
+			if #tree == 2 then
 				if uL then
 					tree[1] = duplicateNumber
 					duplicateNumber = duplicateNumber + 1
@@ -203,7 +208,7 @@ local function markDuplicateEnv(settings, keyword, sortingArray)
 				insertFlaggedPhoto(tree,photo)
 			else
 				-- just add the new photo
-				table.insert(photoList, photo)
+				table.insert(tree, photo)
 			end
 			return true
 		end
@@ -231,7 +236,7 @@ local function getExifToolData(settings)
 			end
 		end
 		-- nil is not a valid key, thus, we take a dummy value
-    	if not value then value = "123exifTool456" end
+    	if not value then value = "~exifTool#" end
     	return value
 	end
 end
@@ -275,31 +280,43 @@ local function comperatorEnv(name, comp, mandatory)
     		if mandatory then
     			return false
     		else
-    			value = "123" .. name .. "456"
+    			value = "~" .. name .. "#"
     		end
     	end
     	-- does the entry already exists?
+    
     	local sub = tree[value]
 		if not sub then
  			sub = {}
    			tree[value] = sub
 		end
+		
     	return comp(sub, photo)
 	end
 end
 
-local function comperatorEnvAlternative(name, altName, comp, mandatory)
+local function comperatorCaptureTime(comp, mandatory)
 	return function(tree, photo)
-		local value = photo:getFormattedMetadata(name)
-		if not value then
-			value = photo:getFormattedMetadata(altName)
+		local value = photo:getFormattedMetadata("dateTimeOriginal")
+		if value then
+			value = "o_" .. value
+		else
+			value = photo:getFormattedMetadata("dateTimeDigitized")
+			if value then
+				value = "d_" .. value
+			else
+				value = photo:getFormattedMetadata("dateTime")
+				if value then
+					value = "e_" .. value
+				end
+			end
 		end
 		-- nil is not a valid key, thus, we take a dummy value
     	if not value then
     		if mandatory then
     			return false
     		else
-    			value = "123" .. name .. "456"
+    			value = "~dateTimeOriginal#"
     		end
     	end
     	-- does the entry already exists?
@@ -492,7 +509,7 @@ function Teekesselchen.new(context)
 	  	if settings.useCaptureDate then
 	  		local iE = settings.ignoreEmptyCaptureDate
 	  		if settings.useScanDate then
-				act = comperatorEnvAlternative("dateTimeOriginal", "dateTimeDigitized", act, iE)
+				act = comperatorCaptureTime(act, iE)
 				if doLog then
 					logger:debug("findDuplicates: using dateTimeOriginal and dateTimeDigitized")
 				end
