@@ -39,11 +39,7 @@ local function changeOrder(tree,photo)
 	-- first element is now rejected
 	header:setRawMetadata("pickStatus", -1)
 	if labelNumber > 0 then
-	_G.logger:debugf("set label %s", "change TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
-
 		header:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
-	else
-	_G.logger:debugf("change no label!!!")
 	end
 	
 	-- move the first element to the end
@@ -51,7 +47,6 @@ local function changeOrder(tree,photo)
 	-- this one is good
 	photo:setRawMetadata("pickStatus", 0)
 	if labelNumber > 0 then
-	_G.logger:debugf("set label %s", "change TK#_" .. Util.numToAlpha(labelNumber) .. "_keep")
 		photo:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_keep")
 	end
 	-- replace first element
@@ -63,16 +58,12 @@ local function insertFlaggedPhoto(tree,photo)
 	local header = tree[2]
 	photo:setRawMetadata("pickStatus", -1)
 	if labelNumber > 0 then
-	_G.logger:debugf("set label %s", "insert TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
 		photo:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
-	else
-	_G.logger:debugf("insert no label!!!")
 	end
 	-- remove revoke flag if necessary
 	if #tree == 2 then
 		header:setRawMetadata("pickStatus", 0)
 		if labelNumber > 0 then
-		_G.logger:debugf("set label %s", "insert TK#_" .. Util.numToAlpha(labelNumber) .. "_keep")
 			header:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_keep")
 		end
 	end
