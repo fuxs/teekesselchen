@@ -56,7 +56,7 @@ function Configuration.new()
 				checkForUpdates = true,
 				activateLogging = false,
 				useExifTool = false,
-				exifToolParameters = "-SequenceNumber -SubSecTime",
+				exifToolParameters = "-SequenceNumber -SubSecTime -SpecialMode",
 				useFileName = false,
 				useFileSize = false,
 				useFileType = false,

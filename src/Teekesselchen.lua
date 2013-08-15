@@ -233,6 +233,7 @@ local function getExifToolData(settings)
 end
 
 local function exifToolEnv(exifTool, marker)
+	-- this function stores the metadata in a separate table
 	return function(auxTree, photo)
 		if #auxTree == 0 then
 			-- this is easy. just add the photo to the empty list
@@ -246,7 +247,7 @@ local function exifToolEnv(exifTool, marker)
 				firstKey = exifTool(firstPhoto)
 				-- adds the new map as second element
 				currentMap = {}
-				currentMap[firstKey] = {firstPhoto}
+				currentMap[firstKey] = {0, firstPhoto}
 				table.insert(auxTree, currentMap)
 			else
 				currentMap = auxTree[2]
@@ -255,7 +256,7 @@ local function exifToolEnv(exifTool, marker)
 			local key = exifTool(photo)
 			local tree = currentMap[key]
 			if not tree then
-				currentMap[key] = {photo}
+				currentMap[key] = {0, photo}
 				return false
 			end
 			return marker(tree, photo)
@@ -264,6 +265,7 @@ local function exifToolEnv(exifTool, marker)
 end
 
 local function comperatorEnv(name, comp, mandatory)
+	local nameStr = "~" .. name .. "#"
 	return function(tree, photo)
 		local value = photo:getFormattedMetadata(name)
 		-- nil is not a valid key, thus, we take a dummy value
@@ -271,7 +273,7 @@ local function comperatorEnv(name, comp, mandatory)
     		if mandatory then
     			return false
     		else
-    			value = "~" .. name .. "#"
+    			value = nameStr
     		end
     	end
     	-- does the entry already exists?
