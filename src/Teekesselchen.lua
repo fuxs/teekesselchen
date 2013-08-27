@@ -72,8 +72,8 @@ end
 
 local function preferRAW(tree,photo)
 	local header = tree[2]
-	local headRAW = header:getRawMetadata("fileFormat") == "RAW"
-	local photoRAW = photo:getRawMetadata("fileFormat") == "RAW"
+	local headRAW = header:getRawMetadata("fileFormat") == "DNG" --@mno since I do not use RAW but DNG this works for me.
+	local photoRAW = photo:getRawMetadata("fileFormat") == "DNG" --@mno more elegant would be to check for both values.
 	if headRaw then
 		insertFlaggedPhoto(tree,photo)
 		return true
@@ -176,13 +176,18 @@ local function markDuplicateEnv(settings, keyword, sortingArray)
 			end
 			if uF then
 				-- deal with virtual copies
+				--@mno a virtual copy is always preferred to flag as reject over an original
+				--@mno because you cannot keep a copy and delte the original in an LR database
 				if not iVC then
-					local isVirtualHead = header:getRawMetadata("isVirtualCopy")
+					local isOrigHead = not header:getRawMetadata("isVirtualCopy")
 					local isOrigNew = not photo:getRawMetadata("isVirtualCopy")
-					if isVirtualHead then
+					if isOrigHead then
+						--@mno header is original, flag new photo and continue sorting for raw tec.
 						insertFlaggedPhoto(tree,photo)
 					else
-						if not isVirtNew then
+						--@mno header is a virtual copy
+						if isOrigNew then
+							--@mno new photo is original which is preferred over a copy
 							changeOrder(tree,photo)
 							duplicateNumber = duplicateNumber + 1
 							return true
@@ -267,7 +272,11 @@ end
 local function comperatorEnv(name, comp, mandatory)
 	local nameStr = "~" .. name .. "#"
 	return function(tree, photo)
-		local value = photo:getFormattedMetadata(name)
+	local value = photo:getFormattedMetadata(name)
+	--@mno strip extension of filename to get base file name
+	if name=="fileName" then
+		value = string.sub(photo:getFormattedMetadata(name),1,-5) --@mno strip the last 4 chracters of the string
+	end
 		-- nil is not a valid key, thus, we take a dummy value
     	if not value then
     		if mandatory then
