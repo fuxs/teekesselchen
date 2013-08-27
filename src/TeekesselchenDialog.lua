@@ -274,6 +274,19 @@ local function showFindDuplicatesDialog()
 								},
 								f:row {
 									f:checkbox {
+										title = "Prefer DNG files",
+										value = LrView.bind("preferDng"),
+										enabled = LrView.bind "useFlag",
+										width = LrView.share("prefer_width"),
+									},
+									f:edit_field {
+										value = LrView.bind("preferDngPos"),
+										width_in_chars = 2,
+										validate = teekesselchen.check_numberValue,
+									},
+								},
+								f:row {
+									f:checkbox {
 										title = "Prefer larger files",
 										value = LrView.bind("preferLarge"),
 										enabled = LrView.bind "useFlag",
@@ -573,7 +586,7 @@ local function showFindDuplicatesDialog()
 						fill_horizontal = 1,
 						spacing = f:control_spacing(),
 						f:static_text {
-							title = "Teekesselchen V1.6",
+							title = "Teekesselchen V1.6.1",
 						},
 						f:static_text {
 							title = "Copyright (C) 2013  Michael Bungenstock",
@@ -652,7 +665,7 @@ local function showFindDuplicatesDialog()
 			}
 			
 			local result = LrDialogs.presentModalDialog({
-				title = "Teekesselchen V1.6: Find Duplicates",
+				title = "Teekesselchen V1.6.1: Find Duplicates",
 				contents = contents,
 				actionVerb = "Find Duplicates",
 				otherVerb = "Save",

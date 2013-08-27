@@ -72,6 +72,22 @@ end
 
 local function preferRAW(tree,photo)
 	local header = tree[2]
+	local headRAW = header:getRawMetadata("fileFormat") == "RAW"
+	local photoRAW = photo:getRawMetadata("fileFormat") == "RAW"
+	if headRaw then
+		insertFlaggedPhoto(tree,photo)
+		return true
+	else
+		if photoRAW then
+			changeOrder(tree,photo)
+			return true
+		end
+	end
+	return false
+end
+
+local function preferDNG(tree,photo)
+	local header = tree[2]
 	local headRAW = header:getRawMetadata("fileFormat") == "DNG" --@mno since I do not use RAW but DNG this works for me.
 	local photoRAW = photo:getRawMetadata("fileFormat") == "DNG" --@mno more elegant would be to check for both values.
 	if headRaw then
@@ -149,9 +165,6 @@ end
 local function markDuplicateEnv(settings, keyword, sortingArray)
 	local iVC = settings.ignoreVirtualCopies
 	local uF = settings.useFlag
-	local pRaw = settings.preferRaw
-	local pL = settings.preferLarge
-	local pR = settings.preferRating
 	local uL = settings.useLabels
 	local duplicateNumber = 1
 	
@@ -459,6 +472,12 @@ function Teekesselchen.new(context)
 				pos = tonumber(settings.preferRawPos)
 				if pos >= 0 then
 					sortingTable[pos] = preferRAW
+				end
+			end
+			if settings.preferDng then
+				pos = tonumber(settings.preferDngPos)
+				if pos >= 0 then
+					sortingTable[pos] = preferDNG
 				end
 			end
 			if settings.preferLarge then

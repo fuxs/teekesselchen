@@ -1,5 +1,12 @@
 Release Notes
 
+V1.6.1 released on 27th of August 2013
+Bug fix:
+- Virtual copy bug fix and improved name matching by Michel de Nooij
+
+Improvements:
+- Supports DNG file format now
+
 V1.6 released on 8th of August 2013
 Bug fix:
 - The prefer logic for marked photos was not consistent. This is fixed.
