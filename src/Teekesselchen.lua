@@ -427,6 +427,10 @@ function Teekesselchen.new(context)
   		local ignoreKeywords = settings.useIgnoreKeywords and (#ignoreList > 0)
   		local ignoreVirtualCopies = settings.ignoreVirtualCopies
   		local keywordObj
+  		local lrVersion = LrApplication.versionTable()
+		local lrMajor = lrVersion.major
+		local lrMinor = lrVersion.minor
+		local supportsFlag = lrMajor >= 4
   		
   		-- get the keyword and create a smart collection if necessary
   		
@@ -452,7 +456,8 @@ function Teekesselchen.new(context)
 				-- removes the existing photos from the smart collection
 				if collection and settings.cleanSmartCollection then
 					for i,oldPhoto in ipairs(collection:getPhotos()) do
-						if settings.resetFlagSmartCollection and 
+						if settings.resetFlagSmartCollection and
+						supportsFlag and
 						oldPhoto:getRawMetadata("pickStatus") == -1 then
 							oldPhoto:setRawMetadata("pickStatus", 0)
 						end

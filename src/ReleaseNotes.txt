@@ -1,5 +1,9 @@
 Release Notes
 
+V1.6.2 released on 8th of September 2013
+Bug fix:
+- Lightroom 3.x throws an "pickstatus" error. This is fixed.
+
 V1.6.1 released on 27th of August 2013
 Bug fix:
 - Virtual copy bug fix and improved name matching by Michel de Nooij
