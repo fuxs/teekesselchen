@@ -42,5 +42,5 @@ return {
 		    title = LOC "Find Duplicates",
 		    file = "TeekesselchenDialog.lua",
 	}},
-	VERSION = { major=1, minor=6, revision=2, build=1 },
+	VERSION = { major=1, minor=7, revision=1, build=1 },
 }

@@ -33,94 +33,107 @@ local LrFileUtils = import "LrFileUtils"
 
 require "Util"
 
-local function changeOrder(tree,photo)
+local lrVersion = LrApplication.versionTable()
+local lrMajor = lrVersion.major
+local lrMinor = lrVersion.minor
+local supportsFlag = lrMajor >= 4
+
+local function changeOrder(tree,photo,flag,label)
 	local labelNumber = tree[1]
 	local header = tree[2]
 	-- first element is now rejected
-	header:setRawMetadata("pickStatus", -1)
-	if labelNumber > 0 then
+	if flag and supportsFlag then
+		header:setRawMetadata("pickStatus", -1)
+	end
+	if label and labelNumber > 0 then
 		header:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
 	end
 	
 	-- move the first element to the end
 	table.insert(tree, header)	
 	-- this one is good
-	photo:setRawMetadata("pickStatus", 0)
-	if labelNumber > 0 then
+	if flag and supportsFlag then
+		photo:setRawMetadata("pickStatus", 0)
+	end
+	if label and labelNumber > 0 then
 		photo:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_keep")
 	end
 	-- replace first element
 	tree[2] = photo
 end
 
-local function insertFlaggedPhoto(tree,photo)
+local function insertFlaggedPhoto(tree,photo,flag,label)
 	local labelNumber = tree[1]
 	local header = tree[2]
-	photo:setRawMetadata("pickStatus", -1)
-	if labelNumber > 0 then
+	if flag and supportsFlag then
+		photo:setRawMetadata("pickStatus", -1)
+	end
+	if label and labelNumber > 0 then
 		photo:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
 	end
 	-- remove revoke flag if necessary
 	if #tree == 2 then
-		header:setRawMetadata("pickStatus", 0)
-		if labelNumber > 0 then
+		if flag and supportsFlag then
+			header:setRawMetadata("pickStatus", 0)
+		end
+		if label and labelNumber > 0 then
 			header:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_keep")
 		end
 	end
 	table.insert(tree, photo)
 end
 
-local function preferRAW(tree,photo)
+local function preferRAW(tree,photo,flag,label)
 	local header = tree[2]
 	local headRAW = header:getRawMetadata("fileFormat") == "RAW"
 	local photoRAW = photo:getRawMetadata("fileFormat") == "RAW"
 	if headRaw then
-		insertFlaggedPhoto(tree,photo)
+		insertFlaggedPhoto(tree,photo,flag,label)
 		return true
 	else
 		if photoRAW then
-			changeOrder(tree,photo)
+			changeOrder(tree,photo,flag,label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferDNG(tree,photo)
+local function preferDNG(tree,photo,flag,label)
 	local header = tree[2]
 	local headRAW = header:getRawMetadata("fileFormat") == "DNG" --@mno since I do not use RAW but DNG this works for me.
 	local photoRAW = photo:getRawMetadata("fileFormat") == "DNG" --@mno more elegant would be to check for both values.
 	if headRaw then
-		insertFlaggedPhoto(tree,photo)
+		insertFlaggedPhoto(tree,photo,flag,label)
 		return true
 	else
 		if photoRAW then
-			changeOrder(tree,photo)
+			changeOrder(tree,photo,flag,label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferLarge(tree,photo)
+local function preferLarge(tree,photo,flag,label)
 	local header = tree[2]
 	local sizeHead = header:getRawMetadata("fileSize")
 	local sizeNew = photo:getRawMetadata("fileSize")
 	if sizeHead == nil then sizeHead = 0 end
 	if sizeNew == nil then sizeNew = 0 end
 	if sizeNew < sizeHead then
-		insertFlaggedPhoto(tree,photo)
+		insertFlaggedPhoto(tree,photo,flag,label)
 		return true
 	else
 		if sizeNew > sizeHead then
-			changeOrder(tree,photo)
+			changeOrder(tree,photo,flag,label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferDimension(tree,photo)
+local function preferDimension(tree,photo,flag,label)
 	local header = tree[2]
 	local auxHead = header:getRawMetadata("dimensions")
 	local auxNew = photo:getRawMetadata("dimensions")
@@ -133,29 +146,29 @@ local function preferDimension(tree,photo)
 		dimNew = auxNew.width * auxNew.height
 	end
 	if dimNew < dimHead then
-		insertFlaggedPhoto(tree,photo)
+		insertFlaggedPhoto(tree,photo,flag,label)
 		return true
 	else
 		if dimNew > dimHead then
-			changeOrder(tree,photo)
+			changeOrder(tree,photo,flag,label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferRating(tree,photo)
+local function preferRating(tree,photo,flag,label)
 	local header = tree[2]
 	local ratingHead = header:getRawMetadata("rating")
 	local ratingNew = photo:getRawMetadata("rating")
 	if ratingHead == nil then ratingHead = 0 end
 	if ratingNew == nil then ratingNew = 0 end
 	if ratingNew < ratingHead then
-		insertFlaggedPhoto(tree,photo)
+		insertFlaggedPhoto(tree,photo,flag,label)
 		return true
 	else
 		if ratingNew > ratingHead then
-			changeOrder(tree,photo)
+			changeOrder(tree,photo,flag,label)
 			return true
 		end
 	end
@@ -187,7 +200,7 @@ local function markDuplicateEnv(settings, keyword, sortingArray)
 				end
 				header:addKeyword(keyword)
 			end
-			if uF then
+			if uF or uL then
 				-- deal with virtual copies
 				--@mno a virtual copy is always preferred to flag as reject over an original
 				--@mno because you cannot keep a copy and delte the original in an LR database
@@ -196,12 +209,12 @@ local function markDuplicateEnv(settings, keyword, sortingArray)
 					local isOrigNew = not photo:getRawMetadata("isVirtualCopy")
 					if isOrigHead then
 						--@mno header is original, flag new photo and continue sorting for raw tec.
-						insertFlaggedPhoto(tree,photo)
+						insertFlaggedPhoto(tree,photo,uF,uL)
 					else
 						--@mno header is a virtual copy
 						if isOrigNew then
 							--@mno new photo is original which is preferred over a copy
-							changeOrder(tree,photo)
+							changeOrder(tree,photo,uF, uL)
 							duplicateNumber = duplicateNumber + 1
 							return true
 						end
@@ -209,12 +222,12 @@ local function markDuplicateEnv(settings, keyword, sortingArray)
 				end
 				-- do some sorting
 				for i,preferFunc in ipairs(sortingArray) do
-					if preferFunc(tree,photo) then
+					if preferFunc(tree,photo,uF,uL) then
 						return true
 					end
 				end
 				-- if we reach this point then no sorting happened
-				insertFlaggedPhoto(tree,photo)
+				insertFlaggedPhoto(tree,photo,uF,uL)
 			else
 				-- just add the new photo
 				table.insert(tree, photo)
@@ -427,10 +440,6 @@ function Teekesselchen.new(context)
   		local ignoreKeywords = settings.useIgnoreKeywords and (#ignoreList > 0)
   		local ignoreVirtualCopies = settings.ignoreVirtualCopies
   		local keywordObj
-  		local lrVersion = LrApplication.versionTable()
-		local lrMajor = lrVersion.major
-		local lrMinor = lrVersion.minor
-		local supportsFlag = lrMajor >= 4
   		
   		-- get the keyword and create a smart collection if necessary
   		
@@ -470,7 +479,7 @@ function Teekesselchen.new(context)
 	  	-- construct the array for the sorting
 		local sortingArray = {}
 		
-		if settings.useFlag then
+		if settings.useFlag or settings.useLabels then
 			local sortingTable = {}
 			local pos
 			if settings.preferRaw then
