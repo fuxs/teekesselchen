@@ -169,6 +169,7 @@ local function showFindDuplicatesDialog()
 							align = "right",
 							action = function(button)
 								configuration.copyDefaultsTo(p)
+								p.useFlag = p.useFlag and supportsFlag
 							end,
 						},
 					},
