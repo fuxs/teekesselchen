@@ -1,5 +1,9 @@
 Release Notes
 
+V1.8 released on 25th of January 2014
+Improvements:
+- Adds 4 new prefer rule settings for file names and paths.
+
 V1.7 released on 2nd of January 2014
 Improvements:
 - Color labels can now be used without flag "mark as rejected". This should improve the 

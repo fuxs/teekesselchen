@@ -1,5 +1,5 @@
-Teekesselchen V1.7
-====================
+Teekesselchen V1.8
+==================
 Please refer to http://www.bungenstock.de/teekesselchen/ to get more information and
 documentation.
 

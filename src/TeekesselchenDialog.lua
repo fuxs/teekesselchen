@@ -325,6 +325,58 @@ local function showFindDuplicatesDialog()
 										validate = teekesselchen.check_numberValue,
 									},
 								},
+								f:row {
+									f:checkbox {
+										title = "Prefer short file names",
+										value = LrView.bind("preferShortName"),
+										-- enabled = LrView.bind "useFlag",
+										width = LrView.share("prefer_width"),
+									},
+									f:edit_field {
+										value = LrView.bind("preferShortNamePos"),
+										width_in_chars = 2,
+										validate = teekesselchen.check_numberValue,
+									},
+								},
+								f:row {
+									f:checkbox {
+										title = "Prefer long file names",
+										value = LrView.bind("preferLongName"),
+										-- enabled = LrView.bind "useFlag",
+										width = LrView.share("prefer_width"),
+									},
+									f:edit_field {
+										value = LrView.bind("preferLongNamePos"),
+										width_in_chars = 2,
+										validate = teekesselchen.check_numberValue,
+									},
+								},
+								f:row {
+									f:checkbox {
+										title = "Prefer short paths",
+										value = LrView.bind("preferShortPath"),
+										-- enabled = LrView.bind "useFlag",
+										width = LrView.share("prefer_width"),
+									},
+									f:edit_field {
+										value = LrView.bind("preferShortPathPos"),
+										width_in_chars = 2,
+										validate = teekesselchen.check_numberValue,
+									},
+								},
+								f:row {
+									f:checkbox {
+										title = "Prefer long paths",
+										value = LrView.bind("preferLongPath"),
+										-- enabled = LrView.bind "useFlag",
+										width = LrView.share("prefer_width"),
+									},
+									f:edit_field {
+										value = LrView.bind("preferLongPathPos"),
+										width_in_chars = 2,
+										validate = teekesselchen.check_numberValue,
+									},
+								},
 							},
 --						},
 						},
@@ -587,7 +639,7 @@ local function showFindDuplicatesDialog()
 						fill_horizontal = 1,
 						spacing = f:control_spacing(),
 						f:static_text {
-							title = "Teekesselchen v1.7",
+							title = "Teekesselchen v1.8",
 						},
 						f:static_text {
 							title = "Copyright (C) 2013  Michael Bungenstock",
@@ -666,7 +718,7 @@ local function showFindDuplicatesDialog()
 			}
 			
 			local result = LrDialogs.presentModalDialog({
-				title = "Teekesselchen v1.7: Find Duplicates",
+				title = "Teekesselchen v1.8: Find Duplicates",
 				contents = contents,
 				actionVerb = "Find Duplicates",
 				otherVerb = "Save",

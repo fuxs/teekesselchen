@@ -133,6 +133,86 @@ local function preferLarge(tree,photo,flag,label)
 	return false
 end
 
+local function preferShortName(tree,photo,flag,label)
+	local header = tree[2]
+	local nameHead = header:getFormattedMetadata("fileName")
+	local nameNew = photo:getFormattedMetadata("fileName")
+	local headLength = 0;
+	local newLength = 0;
+	if nameHead ~= nil then headLength = nameHead:len() end
+	if nameNew ~= nil then newLength = nameNew:len() end
+	if newLength > headLength then
+		insertFlaggedPhoto(tree,photo,flag,label)
+		return true
+	else
+		if newLength < headLength then
+			changeOrder(tree,photo,flag,label)
+			return true
+		end
+	end
+	return false
+end
+
+local function preferLongName(tree,photo,flag,label)
+	local header = tree[2]
+	local nameHead = header:getFormattedMetadata("fileName")
+	local nameNew = photo:getFormattedMetadata("fileName")
+	local headLength = 0;
+	local newLength = 0;
+	if nameHead ~= nil then headLength = nameHead:len() end
+	if nameNew ~= nil then newLength = nameNew:len() end
+	if newLength < headLength then
+		insertFlaggedPhoto(tree,photo,flag,label)
+		return true
+	else
+		if newLength > headLength then
+			changeOrder(tree,photo,flag,label)
+			return true
+		end
+	end
+	return false
+end
+
+local function preferShortPath(tree,photo,flag,label)
+	local header = tree[2]
+	local pathHead = header:getRawMetadata("path")
+	local pathNew = photo:getRawMetadata("path")
+	local headLength = 0;
+	local newLength = 0;
+	if pathHead ~= nil then headLength = pathHead:len() end
+	if pathNew ~= nil then newLength = pathNew:len() end
+	if newLength > headLength then
+		insertFlaggedPhoto(tree,photo,flag,label)
+		return true
+	else
+		if newLength < headLength then
+			changeOrder(tree,photo,flag,label)
+			return true
+		end
+	end
+	return false
+end
+
+local function preferLongPath(tree,photo,flag,label)
+	local header = tree[2]
+	local pathHead = header:getRawMetadata("path")
+	local pathNew = photo:getRawMetadata("path")
+	local headLength = 0;
+	local newLength = 0;
+	if pathHead ~= nil then headLength = pathHead:len() end
+	if pathNew ~= nil then newLength = pathNew:len() end
+	if newLength < headLength then
+		insertFlaggedPhoto(tree,photo,flag,label)
+		return true
+	else
+		if newLength > headLength then
+			changeOrder(tree,photo,flag,label)
+			return true
+		end
+	end
+	return false
+end
+
 local function preferDimension(tree,photo,flag,label)
 	local header = tree[2]
 	local auxHead = header:getRawMetadata("dimensions")
@@ -519,6 +599,43 @@ function Teekesselchen.new(context)
 						pos = pos + 1
 					end
 					sortingTable[pos] = preferRating
+				end
+			end
+			-- new file and path settings
+			if settings.preferShortName then
+				pos = tonumber(settings.preferShortNamePos)
+				if pos >= 0 then
+					while sortingTable[pos] do
+						pos = pos + 1
+					end
+					sortingTable[pos] = preferShortName
+				end
+			end
+			if settings.preferLongName then
+				pos = tonumber(settings.preferLongNamePos)
+				if pos >= 0 then
+					while sortingTable[pos] do
+						pos = pos + 1
+					end
+					sortingTable[pos] = preferLongName
+				end
+			end
+			if settings.preferShortPath then
+				pos = tonumber(settings.preferShortPathPos)
+				if pos >= 0 then
+					while sortingTable[pos] do
+						pos = pos + 1
+					end
+					sortingTable[pos] = preferShortPath
+				end
+			end
+			if settings.preferLongPath then
+				pos = tonumber(settings.preferLongPathPos)
+				if pos >= 0 then
+					while sortingTable[pos] do
+						pos = pos + 1
+					end
+					sortingTable[pos] = preferLongPath
 				end
 			end
 			local auxArray = {}
