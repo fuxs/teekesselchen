@@ -85,7 +85,7 @@ end
 
 function Util.getExifToolCmd(parameters)
 	if WIN_ENV then
-		return LrPathUtils.child( _PLUGIN.path, "exiftool.exe") .. " " .. parameters
+		return '"' .. LrPathUtils.child( _PLUGIN.path, "exiftool.exe") .. '" ' .. parameters
 	else
 		-- must be mac
 		return "'" .. LrPathUtils.child( _PLUGIN.path, "exiftool") .. "' " .. parameters
