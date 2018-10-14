@@ -56,7 +56,7 @@ function Configuration.new()
 				checkForUpdates = true,
 				activateLogging = false,
 				useExifTool = false,
-				exifToolParameters = "-SequenceNumber -SubSecTime -SpecialMode -MetaDataDate -FileNumber -SubSecDateTimeOriginal -ThumbnailLength -ImageNumber",
+				exifToolParameters = "-ExtractEmbedded -SequenceNumber -SubSecTime -SpecialMode -MetaDataDate -FileNumber -SubSecDateTimeOriginal -ThumbnailLength -ImageNumber",
 				useFileName = false,
 				useFileSize = false,
 				useFileType = false,
