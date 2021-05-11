@@ -326,6 +326,7 @@ local function getExifToolData(settings)
 	return function(photo)
 		local path = photo:getRawMetadata("path")
 		local cmdLine = cmd .. ' "' .. path .. '" > "' .. temp .. '"'
+        if WIN_ENV then cmdLine = '"' .. cmdLine .. '"' end
 		local value
 		if LrTasks.execute(cmdLine) == 0 then
 			value = LrFileUtils.readFile(temp)
