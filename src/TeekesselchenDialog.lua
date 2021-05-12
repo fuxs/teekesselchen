@@ -639,10 +639,10 @@ local function showFindDuplicatesDialog()
 						fill_horizontal = 1,
 						spacing = f:control_spacing(),
 						f:static_text {
-							title = "Teekesselchen v1.8",
+							title = "Teekesselchen v1.8.1",
 						},
 						f:static_text {
-							title = "Copyright (C) 2013  Michael Bungenstock",
+							title = "Copyright (C) 2021  Michael Bungenstock",
 						},
 						f:static_text {
 							title = "Contact: michael@bungenstock.de",
@@ -718,7 +718,7 @@ local function showFindDuplicatesDialog()
 			}
 			
 			local result = LrDialogs.presentModalDialog({
-				title = "Teekesselchen v1.8: Find Duplicates",
+				title = "Teekesselchen v1.8.1: Find Duplicates",
 				contents = contents,
 				actionVerb = "Find Duplicates",
 				otherVerb = "Save",

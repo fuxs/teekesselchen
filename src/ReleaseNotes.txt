@@ -1,5 +1,12 @@
 Release Notes
 
+V1.8.1 released on 12th of May 2021
+Updates:
+- Includes latest version (12.25) of ExifTool by Phil Harvey
+
+Bug fix:
+- Path name bug with spaces. Thanks to madbrain76
+
 V1.8 released on 25th of January 2014
 Improvements:
 - Adds 4 new prefer rule settings for file names and paths.

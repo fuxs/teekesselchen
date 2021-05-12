@@ -37,7 +37,8 @@ _G.configuration = Configuration.new()
 local settings = _G.configuration.settings
 
 _G.logger = LrLogger("teekesselchen")
-_G.logger:enable("print")
+_G.logger:enable("logfile")
+_G.logger:info("This is the teekesselchen plug-in")
 -- Shall I look for updates?
 if settings.checkForUpdates then
 	LrTasks.startAsyncTask(function()
