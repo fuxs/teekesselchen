@@ -288,6 +288,19 @@ local function showFindDuplicatesDialog()
 								},
 								f:row {
 									f:checkbox {
+										title = "Prefer HEIC files",
+										value = LrView.bind("preferHeic"),
+										-- enabled = LrView.bind "useFlag",
+										width = LrView.share("prefer_width"),
+									},
+									f:edit_field {
+										value = LrView.bind("preferHeicPos"),
+										width_in_chars = 2,
+										validate = teekesselchen.check_numberValue,
+									},
+								},
+								f:row {
+									f:checkbox {
 										title = "Prefer larger files",
 										value = LrView.bind("preferLarge"),
 										-- enabled = LrView.bind "useFlag",
