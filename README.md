@@ -4,7 +4,7 @@ Lightroom plugin that finds duplicates by metadata.
 
 # Installation
 
-1. Download the latest [release](https://github.com/fuxs/teekesselchen/releases/tag/1.8.1)
+1. Download the latest [release](https://github.com/fuxs/teekesselchen/releases/tag/1.9.0)
 2. Unzip `teekesselchen.zip` to `teekesslechen.lrplugin`
 3. Start Lightroom Classic
 4. Open the Plug-In Manager from the menue (_File > Plug-In Manager..._)
