@@ -1,5 +1,9 @@
 Release Notes
 
+V1.9.0 released on 17th of May 2021
+Updates:
+- Added HEIC support
+
 V1.8.1 released on 12th of May 2021
 Updates:
 - Includes latest version (12.25) of ExifTool by Phil Harvey
