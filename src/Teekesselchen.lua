@@ -85,13 +85,13 @@ end
 
 local function preferRAW(tree,photo,flag,label)
 	local header = tree[2]
-	local headRAW = header:getRawMetadata("fileFormat") == "RAW"
-	local photoRAW = photo:getRawMetadata("fileFormat") == "RAW"
-	if headRaw then
+	local headMatch = header:getRawMetadata("fileFormat") == "RAW"
+	local photoMatch = photo:getRawMetadata("fileFormat") == "RAW"
+	if headMatch then
 		insertFlaggedPhoto(tree,photo,flag,label)
 		return true
 	else
-		if photoRAW then
+		if photoMatch then
 			changeOrder(tree,photo,flag,label)
 			return true
 		end
@@ -101,13 +101,29 @@ end
 
 local function preferDNG(tree,photo,flag,label)
 	local header = tree[2]
-	local headRAW = header:getRawMetadata("fileFormat") == "DNG" --@mno since I do not use RAW but DNG this works for me.
-	local photoRAW = photo:getRawMetadata("fileFormat") == "DNG" --@mno more elegant would be to check for both values.
-	if headRaw then
+	local headMatch = header:getRawMetadata("fileFormat") == "DNG" --@mno since I do not use RAW but DNG this works for me.
+	local photoMatch = photo:getRawMetadata("fileFormat") == "DNG" --@mno more elegant would be to check for both values.
+	if headMatch then
 		insertFlaggedPhoto(tree,photo,flag,label)
 		return true
 	else
-		if photoRAW then
+		if photoMatch then
+			changeOrder(tree,photo,flag,label)
+			return true
+		end
+	end
+	return false
+end
+
+local function preferHEIC(tree,photo,flag,label)
+	local header = tree[2]
+	local headMatch = header:getRawMetadata("fileFormat") == "HEIC"
+	local photoMatch = photo:getRawMetadata("fileFormat") == "HEIC"
+	if headMatch then
+		insertFlaggedPhoto(tree,photo,flag,label)
+		return true
+	else
+		if photoMatch then
 			changeOrder(tree,photo,flag,label)
 			return true
 		end
@@ -325,12 +341,12 @@ local function getExifToolData(settings)
 	local logger = _G.logger
 	return function(photo)
 		local path = photo:getRawMetadata("path")
-		local cmdLine = '"' .. cmd .. ' "' .. path .. '" > "' .. temp .. '""'
+		local cmdLine = cmd .. ' "' .. path .. '" > "' .. temp .. '"'
+        if WIN_ENV then cmdLine = '"' .. cmdLine .. '"' end
 		local value
 		if LrTasks.execute(cmdLine) == 0 then
 			value = LrFileUtils.readFile(temp)
 			if doLog then
-				logger:debug("getExifToolData cmdLine: " .. cmdLine)
 				logger:debug("getExifToolData data: " .. value)
 			end
 		else
@@ -572,7 +588,19 @@ function Teekesselchen.new(context)
 			if settings.preferDng then
 				pos = tonumber(settings.preferDngPos)
 				if pos >= 0 then
+					while sortingTable[pos] do
+						pos = pos + 1
+					end
 					sortingTable[pos] = preferDNG
+				end
+			end
+			if settings.preferHeic then
+				pos = tonumber(settings.preferHeicPos)
+				if pos >= 0 then
+					while sortingTable[pos] do
+						pos = pos + 1
+					end
+					sortingTable[pos] = preferHEIC
 				end
 			end
 			if settings.preferLarge then

@@ -288,6 +288,19 @@ local function showFindDuplicatesDialog()
 								},
 								f:row {
 									f:checkbox {
+										title = "Prefer HEIC files",
+										value = LrView.bind("preferHeic"),
+										-- enabled = LrView.bind "useFlag",
+										width = LrView.share("prefer_width"),
+									},
+									f:edit_field {
+										value = LrView.bind("preferHeicPos"),
+										width_in_chars = 2,
+										validate = teekesselchen.check_numberValue,
+									},
+								},
+								f:row {
+									f:checkbox {
 										title = "Prefer larger files",
 										value = LrView.bind("preferLarge"),
 										-- enabled = LrView.bind "useFlag",
@@ -639,10 +652,10 @@ local function showFindDuplicatesDialog()
 						fill_horizontal = 1,
 						spacing = f:control_spacing(),
 						f:static_text {
-							title = "Teekesselchen v1.8",
+							title = "Teekesselchen v1.9.0",
 						},
 						f:static_text {
-							title = "Copyright (C) 2013  Michael Bungenstock",
+							title = "Copyright (C) 2021  Michael Bungenstock",
 						},
 						f:static_text {
 							title = "Contact: michael@bungenstock.de",
@@ -718,7 +731,7 @@ local function showFindDuplicatesDialog()
 			}
 			
 			local result = LrDialogs.presentModalDialog({
-				title = "Teekesselchen v1.8: Find Duplicates",
+				title = "Teekesselchen v1.9.0: Find Duplicates",
 				contents = contents,
 				actionVerb = "Find Duplicates",
 				otherVerb = "Save",

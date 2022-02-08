@@ -23,6 +23,7 @@ Configuration.lua
 ------------------------------------------------------------------------------]]
 
 local LrPrefs = import "LrPrefs"
+local LrDialogs = import "LrDialogs"
 
 Configuration = {}
 
@@ -56,12 +57,13 @@ function Configuration.new()
 				checkForUpdates = true,
 				activateLogging = false,
 				useExifTool = false,
-				exifToolParameters = "-ExtractEmbedded -SequenceNumber -SubSecTime -SpecialMode -MetaDataDate -FileNumber -SubSecDateTimeOriginal -ThumbnailLength -ImageNumber",
+				exifToolParameters = "-SequenceNumber -SubSecTime -SpecialMode",
 				useFileName = false,
 				useFileSize = false,
 				useFileType = false,
 				preferRaw = true,
 				preferDng = true,
+				preferHeic= true,
 				preferLarge = true,
 				preferDimension = true,
 				preferRating = true,
@@ -71,21 +73,41 @@ function Configuration.new()
 				preferLongPath = false,
 				preferRawPos = "1",
 				preferDngPos = "2",
-				preferLargePos = "3",
-				preferDimensionPos = "4",
-				preferRatingPos = "5",
-				preferShortNamePos = "6",
-				preferLongNamePos = "7",
-				preferShortPathPos = "8",
-				preferLongPathPos = "9",
+				preferHeicPos = "3",
+				preferLargePos = "4",
+				preferDimensionPos = "5",
+				preferRatingPos = "6",
+				preferShortNamePos = "7",
+				preferLongNamePos = "8",
+				preferShortPathPos = "9",
+				preferLongPathPos = "10",
 				ignoreEmptyCaptureDate = true,
 				useScanDate = true,
-				useLabels = true
+				useLabels = true,
+				versionNumber = 42,
 	}
 	local prefs = LrPrefs.prefsForPlugin()
 	local aux = prefs.settings
 	if aux == nil then aux = defaultSettings end
 	
+	local saveIt = false
+	local version
+	if aux.versionNumber == nil then
+		verb = LrDialogs.confirm("New Configuration Options","Reset order marks? All other options won't be touched. Please","Yes", "No")
+		if verb == "ok" then
+			aux.preferRawPos = "1"
+			aux.preferDngPos = "2"
+			aux.preferHeicPos = "3"
+			aux.preferLargePos = "4"
+			aux.preferDimensionPos = "5"
+			aux.preferRatingPos = "6"
+			aux.preferShortNamePos = "7"
+			aux.preferLongNamePos = "8"
+			aux.preferShortPathPos = "9"
+			aux.preferLongPathPos = "10"
+			saveIt = true
+		end
+	end
 	self.settings = {}
 	-- clone table
 	for k,v in pairs(defaultSettings) do 
@@ -95,7 +117,9 @@ function Configuration.new()
 		end
 		self.settings[k] = temp
 	end
-	
+	if saveIt then
+		prefs.settings = self.settings
+	end
 	
 	function self.copyTo(t)
 		for k,v in pairs(self.settings) do t[k] = v end
@@ -112,6 +136,6 @@ function Configuration.new()
 	function self.copyDefaultsTo(t)
 		for k,v in pairs(defaultSettings) do t[k] = v end
 	end
-	
+
 	return self
 end
