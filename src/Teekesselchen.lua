@@ -400,6 +400,9 @@ local function comperatorEnv(name, comp, mandatory)
 	if name=="fileName" then
 		value = string.sub(photo:getFormattedMetadata(name),1,-5) --@mno strip the last 4 chracters of the string
 	end
+	if name=="fileSize" then
+		value = photo:getRawMetadata(name)
+	end
 		-- nil is not a valid key, thus, we take a dummy value
     	if not value then
     		if mandatory then
