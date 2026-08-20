@@ -64,6 +64,27 @@ function Util.numToAlpha(num)
 	return result
 end
 
+--[[
+	Returns the file name without its (last) extension, e.g. "IMG_1.heic" -> "IMG_1".
+	Names without an extension are returned unchanged.
+]]
+function Util.baseName(fileName)
+	return string.match(fileName, "^(.+)%.[^.]+$") or fileName
+end
+
+--[[
+	Validates a prefer-rule position entered in the dialog. findDuplicates
+	ignores rules with a negative position, so only numbers >= 0 are valid.
+	Returns true, or false plus an error message.
+]]
+function Util.checkPosition(value)
+	local num = tonumber(value)
+	if num == nil or num < 0 then
+		return false, tostring(value) .. " is not a valid position. Please enter a number greater or equal to 0, e.g. 3"
+	end
+	return true
+end
+
 function Util.startsWith(str, start)
 	return string.sub(str, 1, string.len(start)) == start
 end

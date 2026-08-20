@@ -22,16 +22,12 @@ PluginInit.lua
 
 ------------------------------------------------------------------------------]]
 
-local LrPrefs = import("LrPrefs")
-local LrDialogs = import("LrDialogs")
-local LrTasks = import("LrTasks")
-local LrHttp = import("LrHttp")
 local LrLogger = import("LrLogger")
 
 require("Configuration")
 require("Updater")
 
-_G.CURRENT_VERSION = 1.9
+_G.CURRENT_VERSION = "1.9.0"
 _G.configuration = Configuration.new()
 -- Load configuration for this plugin
 local settings = _G.configuration.settings
@@ -41,19 +37,5 @@ _G.logger:enable("logfile")
 _G.logger:info("This is the teekesselchen plug-in")
 -- Shall I look for updates?
 if settings.checkForUpdates then
-	LrTasks.startAsyncTask(function()
-		local u = Updater.new()
-		if u.getInfo() then
-			if u.getVersion() > _G.CURRENT_VERSION then
-				local result = LrDialogs.confirm(
-					"A new versions is available (" .. u.getVersionStr() .. ")",
-					"Select Update to open info in browser",
-					"Update"
-				)
-				if result == "ok" then
-					LrHttp.openUrlInBrowser(u.getUrl())
-				end
-			end
-		end
-	end)
+	Updater.check(false)
 end

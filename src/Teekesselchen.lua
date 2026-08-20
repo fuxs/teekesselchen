@@ -373,7 +373,8 @@ local function getExifToolData(settings)
 		if LrTasks.execute(cmdLine) == 0 then
 			value = LrFileUtils.readFile(temp)
 			if doLog then
-				logger:debug("getExifToolData data: " .. value)
+				-- value is nil if the temp file could not be read
+				logger:debug("getExifToolData data: " .. tostring(value))
 			end
 		else
 			if doLog then
@@ -424,9 +425,9 @@ local function comperatorEnv(name, comp, mandatory)
 	local nameStr = "~" .. name .. "#"
 	return function(tree, photo)
 		local value = photo:getFormattedMetadata(name)
-		--@mno strip extension of filename to get base file name
-		if name == "fileName" then
-			value = string.sub(photo:getFormattedMetadata(name), 1, -5) --@mno strip the last 4 chracters of the string
+		-- compare file names without their extension, so IMG_1.heic and IMG_1.jpg match
+		if name == "fileName" and value then
+			value = Util.baseName(value)
 		end
 		-- nil is not a valid key, thus, we take a dummy value
 		if not value then
@@ -535,9 +536,9 @@ function Teekesselchen.new(context)
 	end
 
 	function self.check_numberValue(view, value)
-		local num = tonumber(value)
-		if num == nil then
-			return false, value, value .. " is not a number. Please enter a valid number, e.g. 3"
+		local ok, message = Util.checkPosition(value)
+		if not ok then
+			return false, value, message
 		end
 		return true, value
 	end

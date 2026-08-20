@@ -48,15 +48,6 @@ local license = "This program is free software: you can redistribute it and/or m
 	.. "You should have received a copy of the GNU General Public License "
 	.. "along with this program.  If not, see <http://www.gnu.org/licenses/>."
 
-local function updater(button)
-	LrDialogs.message("ja")
-	LrTasks.startAsyncTask(function()
-		local body, headers = LrHttp.get("http://www.bungenstock.de/teekesselchen/update.php", nil, 5)
-		LrDialogs.message("durch")
-	end)
-	LrDialogs.message("nein")
-end
-
 local function showFindDuplicatesDialog()
 	LrTasks.startAsyncTask(function()
 		LrFunctionContext.callWithContext("DoubletFinderDialog", function(context)
@@ -681,31 +672,7 @@ local function showFindDuplicatesDialog()
 								title = "Check now for updates",
 								alignment = "center",
 								action = function(button)
-									LrTasks.startAsyncTask(function()
-										local u = Updater.new()
-										if u.getInfo() then
-											if u.getVersion() > _G.CURRENT_VERSION then
-												local result = LrDialogs.confirm(
-													"A new versions is available (" .. u.getVersionStr() .. ")",
-													"Select Update to open info in browser",
-													"Update"
-												)
-												if result == "ok" then
-													LrHttp.openUrlInBrowser(u.getUrl())
-												end
-											else
-												LrDialogs.message(
-													"You are using the latest version.",
-													"No update is necessary.",
-													"info"
-												)
-											end
-										else
-											LrDialogs.message(
-												"Could not retrieve data. Please check your internet connection."
-											)
-										end
-									end)
+									Updater.check(true)
 								end,
 							}),
 						}),

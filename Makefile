@@ -4,10 +4,13 @@ DIST=dist
 $(BUILD):
 	@mkdir $(BUILD)
 
-.PHONY: build distribution lint fmt
+.PHONY: build distribution lint fmt fmt-check test
 
 lint:
 	selene src
+
+test:
+	luajit test/run.lua
 
 fmt:
 	stylua src
