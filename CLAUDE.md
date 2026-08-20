@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Teekesselchen is an Adobe Lightroom Classic plugin (Lua, Lightroom SDK) that finds duplicate photos by comparing metadata. There is no test suite or linter; verification means loading the plugin into Lightroom Classic (File > Plug-In Manager, add the built `.lrplugin` folder) and running Library > Plug-in Extras > Find Duplicates.
+Teekesselchen is an Adobe Lightroom Classic plugin (Lua, Lightroom SDK) that finds duplicate photos by comparing metadata. Pure logic (parsing, version compare, string helpers) is tested with `make test` (luajit, `test/run.lua`, Lightroom SDK stubbed); anything touching the SDK can only be verified by loading the plugin into Lightroom Classic (File > Plug-In Manager, add the built `.lrplugin` folder) and running Library > Plug-in Extras > Find Duplicates.
 
 ## Build commands
 
