@@ -134,6 +134,10 @@ local function showFindDuplicatesDialog()
 							visible = LrView.bind("ignoreVirtualCopies"),
 						}),
 						f:static_text({
+							title = "Picked photos are ignored.",
+							visible = LrView.bind("ignorePicked"),
+						}),
+						f:static_text({
 							title = "Duplicates are marked as rejected.",
 							visible = LrView.bind("useFlag"),
 						}),
@@ -594,6 +598,11 @@ local function showFindDuplicatesDialog()
 							f:checkbox({
 								title = "Ignore virtual copies",
 								value = LrView.bind("ignoreVirtualCopies"),
+							}),
+							f:checkbox({
+								title = "Ignore picked photos",
+								value = LrView.bind("ignorePicked"),
+								enabled = supportsFlag,
 							}),
 							f:checkbox({
 								title = "Ignore keywords",

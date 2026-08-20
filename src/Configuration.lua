@@ -52,6 +52,7 @@ function Configuration.new()
 		useGPS = true,
 		useGPSAltitude = true,
 		ignoreVirtualCopies = true,
+		ignorePicked = false,
 		useIgnoreKeywords = false,
 		ignoreKeywords = "",
 		checkForUpdates = true,

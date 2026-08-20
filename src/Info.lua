@@ -38,7 +38,13 @@ return {
 
 	-- LrMetadataProvider = "TeekesselchenMetadataDefinition.lua",
 
+	-- the same entry in both menus: Library > Plug-in Extras and
+	-- File > Plug-in Extras, so users find it either way (issue #16)
 	LrLibraryMenuItems = { {
+		title = LOC("Find Duplicates"),
+		file = "TeekesselchenDialog.lua",
+	} },
+	LrExportMenuItems = { {
 		title = LOC("Find Duplicates"),
 		file = "TeekesselchenDialog.lua",
 	} },

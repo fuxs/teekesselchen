@@ -51,8 +51,9 @@ local function changeOrder(tree, photo, flag, label)
 
 	-- move the first element to the end
 	table.insert(tree, header)
-	-- this one is good
-	if flag and supportsFlag then
+	-- this one is good: undo a rejection we set ourselves, but never
+	-- touch the user's own flag, e.g. picked (issue #8)
+	if flag and supportsFlag and photo:getRawMetadata("pickStatus") == -1 then
 		photo:setRawMetadata("pickStatus", 0)
 	end
 	if label and labelNumber > 0 then
@@ -71,9 +72,9 @@ local function insertFlaggedPhoto(tree, photo, flag, label)
 	if label and labelNumber > 0 then
 		photo:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
 	end
-	-- remove revoke flag if necessary
+	-- remove revoke flag if necessary; never touch the user's own flag (issue #8)
 	if #tree == 2 then
-		if flag and supportsFlag then
+		if flag and supportsFlag and header:getRawMetadata("pickStatus") == -1 then
 			header:setRawMetadata("pickStatus", 0)
 		end
 		if label and labelNumber > 0 then
@@ -552,6 +553,8 @@ function Teekesselchen.new(context)
 		local ignoreList, _ = getKeywordsForString(settings.ignoreKeywords)
 		local ignoreKeywords = settings.useIgnoreKeywords and (#ignoreList > 0)
 		local ignoreVirtualCopies = settings.ignoreVirtualCopies
+		-- pickStatus needs Lightroom 4 or newer
+		local ignorePicked = settings.ignorePicked and supportsFlag
 		local keywordObj
 
 		-- get the keyword and create a smart collection if necessary
@@ -830,9 +833,10 @@ function Teekesselchen.new(context)
 					logger:debugf("Processing photo %s (#%i)", photo:getFormattedMetadata("fileName"), i)
 				end
 				skip = false
-				-- skip virtual copies and videos
+				-- skip virtual copies, picked photos and videos
 				if
 					(ignoreVirtualCopies and photo:getRawMetadata("isVirtualCopy"))
+					or (ignorePicked and photo:getRawMetadata("pickStatus") == 1)
 					or photo:getRawMetadata("isVideo")
 				then
 					skip = true

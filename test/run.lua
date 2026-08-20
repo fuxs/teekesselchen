@@ -168,6 +168,39 @@ local decided4 = preferFormatCase("JPG", "JPG")
 is("preferFormat falls through when neither matches", decided4, false)
 
 --
+-- Keeper flag handling (issue #8): marking a keeper must never erase the
+-- user's "picked" flag (pickStatus 1). Only a rejection the plugin set
+-- itself (-1) may be reset to 0. Rejecting duplicate losers (-1) is the
+-- plugin's job and stays as is. Exercised through preferFormat with the
+-- reject flag enabled (flag = true).
+--
+local function keeperCase(headFields, photoFields)
+	local head = fakePhoto(headFields)
+	local photo = fakePhoto(photoFields)
+	local rule = Teekesselchen.preferFormat("RAW")
+	rule({ 0, head }, photo, true, false)
+	return head, photo
+end
+
+-- RAW head is the keeper; the picked flag on it must survive
+local keptHead, rejected = keeperCase({ fileFormat = "RAW", pickStatus = 1 }, { fileFormat = "JPG" })
+is("keeper keeps its picked flag (kept head)", keptHead:getRawMetadata("pickStatus"), 1)
+is("duplicate loser is rejected", rejected:getRawMetadata("pickStatus"), -1)
+
+-- promoted RAW photo is the keeper; its picked flag must survive
+local demotedHead, promoted = keeperCase({ fileFormat = "JPG" }, { fileFormat = "RAW", pickStatus = 1 })
+is("keeper keeps its picked flag (promoted photo)", promoted:getRawMetadata("pickStatus"), 1)
+is("demoted head is rejected", demotedHead:getRawMetadata("pickStatus"), -1)
+
+-- a rejection set by the plugin earlier in the scan is undone on the keeper
+local _, promotedReset = keeperCase({ fileFormat = "JPG" }, { fileFormat = "RAW", pickStatus = -1 })
+is("keeper's earlier auto-rejection is reset", promotedReset:getRawMetadata("pickStatus"), 0)
+
+-- an unflagged keeper stays unflagged
+local plainHead = keeperCase({ fileFormat = "RAW", pickStatus = 0 }, { fileFormat = "JPG" })
+is("unflagged keeper stays unflagged", plainHead:getRawMetadata("pickStatus"), 0)
+
+--
 -- Teekesselchen.comperatorEnv: groups photos by a metadata value.
 -- File size must compare raw bytes (PR #18): the formatted value is a
 -- rounded string like "24.6 MB", which falsely groups different files.
