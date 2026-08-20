@@ -22,78 +22,85 @@ Configuration.lua
 
 ------------------------------------------------------------------------------]]
 
-local LrPrefs = import "LrPrefs"
-local LrDialogs = import "LrDialogs"
+local LrPrefs = import("LrPrefs")
+local LrDialogs = import("LrDialogs")
 
 Configuration = {}
 
 function Configuration.new()
 	self = {}
-	
+
 	-- settings
 	local defaultSettings = {
-				useKeyword = true,
-				keywordName = "Duplicate",
-				useMetadata = false,
-				useFlag = true,
-				useSmartCollection = true,
-				cleanSmartCollection = true,
-				resetFlagSmartCollection = true,
-				smartCollectionName = "Duplicates",					
-				useCaptureDate = true,
-				useMake = true,
-				useModel = true,
-				useSerialNumber = true,
-				useLens = true,
-				useIsoRating = true,
-				useShutterSpeed = true,
-				useAperture = true,
-				useExposureBias = true,
-				useGPS = true,
-				useGPSAltitude = true,
-				ignoreVirtualCopies = true,
-				useIgnoreKeywords = false,
-				ignoreKeywords = "",
-				checkForUpdates = true,
-				activateLogging = false,
-				useExifTool = false,
-				exifToolParameters = "-SequenceNumber -SubSecTime -SpecialMode",
-				useFileName = false,
-				useFileSize = false,
-				useFileType = false,
-				preferRaw = true,
-				preferDng = true,
-				preferHeic= true,
-				preferLarge = true,
-				preferDimension = true,
-				preferRating = true,
-				preferShortName = false,
-				preferLongName = false,
-				preferShortPath = false,
-				preferLongPath = false,
-				preferRawPos = "1",
-				preferDngPos = "2",
-				preferHeicPos = "3",
-				preferLargePos = "4",
-				preferDimensionPos = "5",
-				preferRatingPos = "6",
-				preferShortNamePos = "7",
-				preferLongNamePos = "8",
-				preferShortPathPos = "9",
-				preferLongPathPos = "10",
-				ignoreEmptyCaptureDate = true,
-				useScanDate = true,
-				useLabels = true,
-				versionNumber = 42,
+		useKeyword = true,
+		keywordName = "Duplicate",
+		useMetadata = false,
+		useFlag = true,
+		useSmartCollection = true,
+		cleanSmartCollection = true,
+		resetFlagSmartCollection = true,
+		smartCollectionName = "Duplicates",
+		useCaptureDate = true,
+		useMake = true,
+		useModel = true,
+		useSerialNumber = true,
+		useLens = true,
+		useIsoRating = true,
+		useShutterSpeed = true,
+		useAperture = true,
+		useExposureBias = true,
+		useGPS = true,
+		useGPSAltitude = true,
+		ignoreVirtualCopies = true,
+		useIgnoreKeywords = false,
+		ignoreKeywords = "",
+		checkForUpdates = true,
+		activateLogging = false,
+		useExifTool = false,
+		exifToolParameters = "-SequenceNumber -SubSecTime -SpecialMode",
+		useFileName = false,
+		useFileSize = false,
+		useFileType = false,
+		preferRaw = true,
+		preferDng = true,
+		preferHeic = true,
+		preferLarge = true,
+		preferDimension = true,
+		preferRating = true,
+		preferShortName = false,
+		preferLongName = false,
+		preferShortPath = false,
+		preferLongPath = false,
+		preferRawPos = "1",
+		preferDngPos = "2",
+		preferHeicPos = "3",
+		preferLargePos = "4",
+		preferDimensionPos = "5",
+		preferRatingPos = "6",
+		preferShortNamePos = "7",
+		preferLongNamePos = "8",
+		preferShortPathPos = "9",
+		preferLongPathPos = "10",
+		ignoreEmptyCaptureDate = true,
+		useScanDate = true,
+		useLabels = true,
+		versionNumber = 42,
 	}
 	local prefs = LrPrefs.prefsForPlugin()
 	local aux = prefs.settings
-	if aux == nil then aux = defaultSettings end
-	
+	if aux == nil then
+		aux = defaultSettings
+	end
+
 	local saveIt = false
 	local version
 	if aux.versionNumber == nil then
-		verb = LrDialogs.confirm("New Configuration Options","Reset order marks? All other options won't be touched. Please","Yes", "No")
+		verb = LrDialogs.confirm(
+			"New Configuration Options",
+			"Reset order marks? All other options won't be touched. Please",
+			"Yes",
+			"No"
+		)
 		if verb == "ok" then
 			aux.preferRawPos = "1"
 			aux.preferDngPos = "2"
@@ -110,7 +117,7 @@ function Configuration.new()
 	end
 	self.settings = {}
 	-- clone table
-	for k,v in pairs(defaultSettings) do 
+	for k, v in pairs(defaultSettings) do
 		local temp = aux[k]
 		if temp == nil then
 			temp = v
@@ -120,21 +127,27 @@ function Configuration.new()
 	if saveIt then
 		prefs.settings = self.settings
 	end
-	
+
 	function self.copyTo(t)
-		for k,v in pairs(self.settings) do t[k] = v end
+		for k, v in pairs(self.settings) do
+			t[k] = v
+		end
 	end
-	
+
 	function self.copyFrom(t)
-		for k,v in pairs(defaultSettings) do self.settings[k] = t[k] end
+		for k, v in pairs(defaultSettings) do
+			self.settings[k] = t[k]
+		end
 	end
-	
+
 	function self.write()
 		prefs.settings = self.settings
 	end
-	
+
 	function self.copyDefaultsTo(t)
-		for k,v in pairs(defaultSettings) do t[k] = v end
+		for k, v in pairs(defaultSettings) do
+			t[k] = v
+		end
 	end
 
 	return self

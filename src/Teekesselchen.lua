@@ -23,22 +23,22 @@ Teekesselchen.lua
 Provides the logic.
 
 ------------------------------------------------------------------------------]]
-Teekesselchen ={}
+Teekesselchen = {}
 
-local LrApplication = import "LrApplication"
-local LrDialogs = import "LrDialogs"
-local LrProgressScope = import "LrProgressScope"
-local LrTasks = import "LrTasks"
-local LrFileUtils = import "LrFileUtils"
+local LrApplication = import("LrApplication")
+local LrDialogs = import("LrDialogs")
+local LrProgressScope = import("LrProgressScope")
+local LrTasks = import("LrTasks")
+local LrFileUtils = import("LrFileUtils")
 
-require "Util"
+require("Util")
 
 local lrVersion = LrApplication.versionTable()
 local lrMajor = lrVersion.major
 local lrMinor = lrVersion.minor
 local supportsFlag = lrMajor >= 4
 
-local function changeOrder(tree,photo,flag,label)
+local function changeOrder(tree, photo, flag, label)
 	local labelNumber = tree[1]
 	local header = tree[2]
 	-- first element is now rejected
@@ -48,9 +48,9 @@ local function changeOrder(tree,photo,flag,label)
 	if label and labelNumber > 0 then
 		header:setRawMetadata("label", "TK#_" .. Util.numToAlpha(labelNumber) .. "_x")
 	end
-	
+
 	-- move the first element to the end
-	table.insert(tree, header)	
+	table.insert(tree, header)
 	-- this one is good
 	if flag and supportsFlag then
 		photo:setRawMetadata("pickStatus", 0)
@@ -62,7 +62,7 @@ local function changeOrder(tree,photo,flag,label)
 	tree[2] = photo
 end
 
-local function insertFlaggedPhoto(tree,photo,flag,label)
+local function insertFlaggedPhoto(tree, photo, flag, label)
 	local labelNumber = tree[1]
 	local header = tree[2]
 	if flag and supportsFlag then
@@ -83,153 +83,173 @@ local function insertFlaggedPhoto(tree,photo,flag,label)
 	table.insert(tree, photo)
 end
 
-local function preferRAW(tree,photo,flag,label)
+local function preferRAW(tree, photo, flag, label)
 	local header = tree[2]
 	local headMatch = header:getRawMetadata("fileFormat") == "RAW"
 	local photoMatch = photo:getRawMetadata("fileFormat") == "RAW"
 	if headMatch then
-		insertFlaggedPhoto(tree,photo,flag,label)
+		insertFlaggedPhoto(tree, photo, flag, label)
 		return true
 	else
 		if photoMatch then
-			changeOrder(tree,photo,flag,label)
+			changeOrder(tree, photo, flag, label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferDNG(tree,photo,flag,label)
+local function preferDNG(tree, photo, flag, label)
 	local header = tree[2]
 	local headMatch = header:getRawMetadata("fileFormat") == "DNG" --@mno since I do not use RAW but DNG this works for me.
 	local photoMatch = photo:getRawMetadata("fileFormat") == "DNG" --@mno more elegant would be to check for both values.
 	if headMatch then
-		insertFlaggedPhoto(tree,photo,flag,label)
+		insertFlaggedPhoto(tree, photo, flag, label)
 		return true
 	else
 		if photoMatch then
-			changeOrder(tree,photo,flag,label)
+			changeOrder(tree, photo, flag, label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferHEIC(tree,photo,flag,label)
+local function preferHEIC(tree, photo, flag, label)
 	local header = tree[2]
 	local headMatch = header:getRawMetadata("fileFormat") == "HEIC"
 	local photoMatch = photo:getRawMetadata("fileFormat") == "HEIC"
 	if headMatch then
-		insertFlaggedPhoto(tree,photo,flag,label)
+		insertFlaggedPhoto(tree, photo, flag, label)
 		return true
 	else
 		if photoMatch then
-			changeOrder(tree,photo,flag,label)
+			changeOrder(tree, photo, flag, label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferLarge(tree,photo,flag,label)
+local function preferLarge(tree, photo, flag, label)
 	local header = tree[2]
 	local sizeHead = header:getRawMetadata("fileSize")
 	local sizeNew = photo:getRawMetadata("fileSize")
-	if sizeHead == nil then sizeHead = 0 end
-	if sizeNew == nil then sizeNew = 0 end
+	if sizeHead == nil then
+		sizeHead = 0
+	end
+	if sizeNew == nil then
+		sizeNew = 0
+	end
 	if sizeNew < sizeHead then
-		insertFlaggedPhoto(tree,photo,flag,label)
+		insertFlaggedPhoto(tree, photo, flag, label)
 		return true
 	else
 		if sizeNew > sizeHead then
-			changeOrder(tree,photo,flag,label)
+			changeOrder(tree, photo, flag, label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferShortName(tree,photo,flag,label)
+local function preferShortName(tree, photo, flag, label)
 	local header = tree[2]
 	local nameHead = header:getFormattedMetadata("fileName")
 	local nameNew = photo:getFormattedMetadata("fileName")
-	local headLength = 0;
-	local newLength = 0;
-	if nameHead ~= nil then headLength = nameHead:len() end
-	if nameNew ~= nil then newLength = nameNew:len() end
+	local headLength = 0
+	local newLength = 0
+	if nameHead ~= nil then
+		headLength = nameHead:len()
+	end
+	if nameNew ~= nil then
+		newLength = nameNew:len()
+	end
 	if newLength > headLength then
-		insertFlaggedPhoto(tree,photo,flag,label)
+		insertFlaggedPhoto(tree, photo, flag, label)
 		return true
 	else
 		if newLength < headLength then
-			changeOrder(tree,photo,flag,label)
+			changeOrder(tree, photo, flag, label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferLongName(tree,photo,flag,label)
+local function preferLongName(tree, photo, flag, label)
 	local header = tree[2]
 	local nameHead = header:getFormattedMetadata("fileName")
 	local nameNew = photo:getFormattedMetadata("fileName")
-	local headLength = 0;
-	local newLength = 0;
-	if nameHead ~= nil then headLength = nameHead:len() end
-	if nameNew ~= nil then newLength = nameNew:len() end
+	local headLength = 0
+	local newLength = 0
+	if nameHead ~= nil then
+		headLength = nameHead:len()
+	end
+	if nameNew ~= nil then
+		newLength = nameNew:len()
+	end
 	if newLength < headLength then
-		insertFlaggedPhoto(tree,photo,flag,label)
+		insertFlaggedPhoto(tree, photo, flag, label)
 		return true
 	else
 		if newLength > headLength then
-			changeOrder(tree,photo,flag,label)
+			changeOrder(tree, photo, flag, label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferShortPath(tree,photo,flag,label)
+local function preferShortPath(tree, photo, flag, label)
 	local header = tree[2]
 	local pathHead = header:getRawMetadata("path")
 	local pathNew = photo:getRawMetadata("path")
-	local headLength = 0;
-	local newLength = 0;
-	if pathHead ~= nil then headLength = pathHead:len() end
-	if pathNew ~= nil then newLength = pathNew:len() end
+	local headLength = 0
+	local newLength = 0
+	if pathHead ~= nil then
+		headLength = pathHead:len()
+	end
+	if pathNew ~= nil then
+		newLength = pathNew:len()
+	end
 	if newLength > headLength then
-		insertFlaggedPhoto(tree,photo,flag,label)
+		insertFlaggedPhoto(tree, photo, flag, label)
 		return true
 	else
 		if newLength < headLength then
-			changeOrder(tree,photo,flag,label)
+			changeOrder(tree, photo, flag, label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferLongPath(tree,photo,flag,label)
+local function preferLongPath(tree, photo, flag, label)
 	local header = tree[2]
 	local pathHead = header:getRawMetadata("path")
 	local pathNew = photo:getRawMetadata("path")
-	local headLength = 0;
-	local newLength = 0;
-	if pathHead ~= nil then headLength = pathHead:len() end
-	if pathNew ~= nil then newLength = pathNew:len() end
+	local headLength = 0
+	local newLength = 0
+	if pathHead ~= nil then
+		headLength = pathHead:len()
+	end
+	if pathNew ~= nil then
+		newLength = pathNew:len()
+	end
 	if newLength < headLength then
-		insertFlaggedPhoto(tree,photo,flag,label)
+		insertFlaggedPhoto(tree, photo, flag, label)
 		return true
 	else
 		if newLength > headLength then
-			changeOrder(tree,photo,flag,label)
+			changeOrder(tree, photo, flag, label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferDimension(tree,photo,flag,label)
+local function preferDimension(tree, photo, flag, label)
 	local header = tree[2]
 	local auxHead = header:getRawMetadata("dimensions")
 	local auxNew = photo:getRawMetadata("dimensions")
@@ -242,29 +262,33 @@ local function preferDimension(tree,photo,flag,label)
 		dimNew = auxNew.width * auxNew.height
 	end
 	if dimNew < dimHead then
-		insertFlaggedPhoto(tree,photo,flag,label)
+		insertFlaggedPhoto(tree, photo, flag, label)
 		return true
 	else
 		if dimNew > dimHead then
-			changeOrder(tree,photo,flag,label)
+			changeOrder(tree, photo, flag, label)
 			return true
 		end
 	end
 	return false
 end
 
-local function preferRating(tree,photo,flag,label)
+local function preferRating(tree, photo, flag, label)
 	local header = tree[2]
 	local ratingHead = header:getRawMetadata("rating")
 	local ratingNew = photo:getRawMetadata("rating")
-	if ratingHead == nil then ratingHead = 0 end
-	if ratingNew == nil then ratingNew = 0 end
+	if ratingHead == nil then
+		ratingHead = 0
+	end
+	if ratingNew == nil then
+		ratingNew = 0
+	end
 	if ratingNew < ratingHead then
-		insertFlaggedPhoto(tree,photo,flag,label)
+		insertFlaggedPhoto(tree, photo, flag, label)
 		return true
 	else
 		if ratingNew > ratingHead then
-			changeOrder(tree,photo,flag,label)
+			changeOrder(tree, photo, flag, label)
 			return true
 		end
 	end
@@ -276,7 +300,7 @@ local function markDuplicateEnv(settings, keyword, sortingArray)
 	local uF = settings.useFlag
 	local uL = settings.useLabels
 	local duplicateNumber = 1
-	
+
 	return function(tree, photo)
 		if #tree == 0 then
 			-- this is easy. just add the photo to the empty list
@@ -286,7 +310,7 @@ local function markDuplicateEnv(settings, keyword, sortingArray)
 		else
 			-- this list is not empty, thus, we have a duplicate!
 			-- mark current photo as duplicate
-			photo:addKeyword(keyword)			
+			photo:addKeyword(keyword)
 			-- if this is the second element then mark the first element as duplicate, too
 			local header = tree[2]
 			if #tree == 2 then
@@ -305,25 +329,25 @@ local function markDuplicateEnv(settings, keyword, sortingArray)
 					local isOrigNew = not photo:getRawMetadata("isVirtualCopy")
 					if isOrigHead then
 						--@mno header is original, flag new photo and continue sorting for raw tec.
-						insertFlaggedPhoto(tree,photo,uF,uL)
+						insertFlaggedPhoto(tree, photo, uF, uL)
 					else
 						--@mno header is a virtual copy
 						if isOrigNew then
 							--@mno new photo is original which is preferred over a copy
-							changeOrder(tree,photo,uF, uL)
+							changeOrder(tree, photo, uF, uL)
 							duplicateNumber = duplicateNumber + 1
 							return true
 						end
 					end
 				end
 				-- do some sorting
-				for i,preferFunc in ipairs(sortingArray) do
-					if preferFunc(tree,photo,uF,uL) then
+				for i, preferFunc in ipairs(sortingArray) do
+					if preferFunc(tree, photo, uF, uL) then
 						return true
 					end
 				end
 				-- if we reach this point then no sorting happened
-				insertFlaggedPhoto(tree,photo,uF,uL)
+				insertFlaggedPhoto(tree, photo, uF, uL)
 			else
 				-- just add the new photo
 				table.insert(tree, photo)
@@ -335,14 +359,16 @@ end
 
 local function getExifToolData(settings)
 	local parameters = settings.exifToolParameters
-  	local doLog = settings.activateLogging
+	local doLog = settings.activateLogging
 	local cmd = Util.getExifToolCmd(parameters)
 	local temp = Util.getTempPath("teekesselchen_exif.tmp")
 	local logger = _G.logger
 	return function(photo)
 		local path = photo:getRawMetadata("path")
 		local cmdLine = cmd .. ' "' .. path .. '" > "' .. temp .. '"'
-        if WIN_ENV then cmdLine = '"' .. cmdLine .. '"' end
+		if WIN_ENV then
+			cmdLine = '"' .. cmdLine .. '"'
+		end
 		local value
 		if LrTasks.execute(cmdLine) == 0 then
 			value = LrFileUtils.readFile(temp)
@@ -355,8 +381,10 @@ local function getExifToolData(settings)
 			end
 		end
 		-- nil is not a valid key, thus, we take a dummy value
-    	if not value then value = "~exifTool#" end
-    	return value
+		if not value then
+			value = "~exifTool#"
+		end
+		return value
 	end
 end
 
@@ -375,16 +403,16 @@ local function exifToolEnv(exifTool, marker)
 				firstKey = exifTool(firstPhoto)
 				-- adds the new map as second element
 				currentMap = {}
-				currentMap[firstKey] = {0, firstPhoto}
+				currentMap[firstKey] = { 0, firstPhoto }
 				table.insert(auxTree, currentMap)
 			else
 				currentMap = auxTree[2]
 			end
-			
+
 			local key = exifTool(photo)
 			local tree = currentMap[key]
 			if not tree then
-				currentMap[key] = {0, photo}
+				currentMap[key] = { 0, photo }
 				return false
 			end
 			return marker(tree, photo)
@@ -395,28 +423,28 @@ end
 local function comperatorEnv(name, comp, mandatory)
 	local nameStr = "~" .. name .. "#"
 	return function(tree, photo)
-	local value = photo:getFormattedMetadata(name)
-	--@mno strip extension of filename to get base file name
-	if name=="fileName" then
-		value = string.sub(photo:getFormattedMetadata(name),1,-5) --@mno strip the last 4 chracters of the string
-	end
-		-- nil is not a valid key, thus, we take a dummy value
-    	if not value then
-    		if mandatory then
-    			return false
-    		else
-    			value = nameStr
-    		end
-    	end
-    	-- does the entry already exists?
-    
-    	local sub = tree[value]
-		if not sub then
- 			sub = {}
-   			tree[value] = sub
+		local value = photo:getFormattedMetadata(name)
+		--@mno strip extension of filename to get base file name
+		if name == "fileName" then
+			value = string.sub(photo:getFormattedMetadata(name), 1, -5) --@mno strip the last 4 chracters of the string
 		end
-		
-    	return comp(sub, photo)
+		-- nil is not a valid key, thus, we take a dummy value
+		if not value then
+			if mandatory then
+				return false
+			else
+				value = nameStr
+			end
+		end
+		-- does the entry already exists?
+
+		local sub = tree[value]
+		if not sub then
+			sub = {}
+			tree[value] = sub
+		end
+
+		return comp(sub, photo)
 	end
 end
 
@@ -437,23 +465,22 @@ local function comperatorCaptureTime(comp, mandatory)
 			end
 		end
 		-- nil is not a valid key, thus, we take a dummy value
-    	if not value then
-    		if mandatory then
-    			return false
-    		else
-    			value = "~dateTimeOriginal#"
-    		end
-    	end
-    	-- does the entry already exists?
-    	local sub = tree[value]
-		if not sub then
- 			sub = {}
-   			tree[value] = sub
+		if not value then
+			if mandatory then
+				return false
+			else
+				value = "~dateTimeOriginal#"
+			end
 		end
-    	return comp(sub, photo)
+		-- does the entry already exists?
+		local sub = tree[value]
+		if not sub then
+			sub = {}
+			tree[value] = sub
+		end
+		return comp(sub, photo)
 	end
 end
-
 
 function Teekesselchen.new(context)
 	local self = {}
@@ -465,8 +492,8 @@ function Teekesselchen.new(context)
 	self.total = #photos
 	self.skipped = 0
 	self.found = 0
-	-- create a keyword hash table	
-	for i,keyword in ipairs(catalog:getKeywords()) do
+	-- create a keyword hash table
+	for i, keyword in ipairs(catalog:getKeywords()) do
 		keywords[keyword:getName()] = keyword
 	end
 
@@ -479,8 +506,8 @@ function Teekesselchen.new(context)
 		local keyword
 		local notFound = {}
 		local j = 1
-		
-		for i,word in ipairs(Util.split(str)) do
+
+		for i, word in ipairs(Util.split(str)) do
 			keyword = keywords[word]
 			if keyword then
 				result[word] = keyword
@@ -492,90 +519,92 @@ function Teekesselchen.new(context)
 		end
 		return result, notFound
 	end
-	
+
 	--[[
 		This public function
 	]]
-	function self.check_ignoreKeywords(view,value)
+	function self.check_ignoreKeywords(view, value)
 		local found, notFound = getKeywordsForString(value)
 		if #notFound == 1 then
-			return false, value, "Unknown keyword will be ignored: " .. notFound[1]	
+			return false, value, "Unknown keyword will be ignored: " .. notFound[1]
 		end
 		if #notFound > 1 then
 			return false, value, "Unknown keywords will be ignored: " .. Util.implode(", ", notFound)
 		end
 		return true, value
 	end
-	
-	function self.check_numberValue(view,value)
+
+	function self.check_numberValue(view, value)
 		local num = tonumber(value)
 		if num == nil then
 			return false, value, value .. " is not a number. Please enter a valid number, e.g. 3"
 		end
 		return true, value
 	end
-	
-	function self.checkKeywordValue(view,value)
+
+	function self.checkKeywordValue(view, value)
 		local str = Util.trim(value)
 		if string.len(str) == 0 then
 			return false, value, "Please provide a keyword"
 		end
 		return true, value
 	end
-	
+
 	function self.hasWriteAccess()
 		return catalog.hasWriteAccess
 	end
 
 	function self.findDuplicates(settings)
-  		local logger = _G.logger
-  		local doLog = settings.activateLogging
-  		if doLog then
-  			logger:debug("findDuplicates")
-  		end
-	  	local ignoreList, _ = getKeywordsForString(settings.ignoreKeywords)
-  		local ignoreKeywords = settings.useIgnoreKeywords and (#ignoreList > 0)
-  		local ignoreVirtualCopies = settings.ignoreVirtualCopies
-  		local keywordObj
-  		
-  		-- get the keyword and create a smart collection if necessary
-  		
-  		catalog:withWriteAccessDo("createKeyword", function()
-  			if doLog then
-	  			logger:debug("Using keyword " .. settings.keywordName .. " as mark")
-	  		end
-	  		keywordObj = catalog:createKeyword(settings.keywordName, nil, false, nil, true)
-  		end)
-  		if settings.useSmartCollection then
-  			local collection
-  			catalog:withWriteAccessDo("createCollection", function()
-  				if doLog then
-  					logger:debug("Using smart collection " .. settings.smartCollectionName)
-  				end
-  				collection = catalog:createSmartCollection(settings.smartCollectionName, {
-		    		criteria = "keywords",
-		    		operation = "words",
-		    		value = settings.keywordName,
+		local logger = _G.logger
+		local doLog = settings.activateLogging
+		if doLog then
+			logger:debug("findDuplicates")
+		end
+		local ignoreList, _ = getKeywordsForString(settings.ignoreKeywords)
+		local ignoreKeywords = settings.useIgnoreKeywords and (#ignoreList > 0)
+		local ignoreVirtualCopies = settings.ignoreVirtualCopies
+		local keywordObj
+
+		-- get the keyword and create a smart collection if necessary
+
+		catalog:withWriteAccessDo("createKeyword", function()
+			if doLog then
+				logger:debug("Using keyword " .. settings.keywordName .. " as mark")
+			end
+			keywordObj = catalog:createKeyword(settings.keywordName, nil, false, nil, true)
+		end)
+		if settings.useSmartCollection then
+			local collection
+			catalog:withWriteAccessDo("createCollection", function()
+				if doLog then
+					logger:debug("Using smart collection " .. settings.smartCollectionName)
+				end
+				collection = catalog:createSmartCollection(settings.smartCollectionName, {
+					criteria = "keywords",
+					operation = "words",
+					value = settings.keywordName,
 				}, nil, true)
 			end)
 			catalog:withWriteAccessDo("cleanCollection", function()
 				-- removes the existing photos from the smart collection
 				if collection and settings.cleanSmartCollection then
-					for i,oldPhoto in ipairs(collection:getPhotos()) do
-						if settings.resetFlagSmartCollection and
-						supportsFlag and
-						oldPhoto:getRawMetadata("pickStatus") == -1 then
+					for i, oldPhoto in ipairs(collection:getPhotos()) do
+						if
+							settings.resetFlagSmartCollection
+							and supportsFlag
+							and oldPhoto:getRawMetadata("pickStatus") == -1
+						then
 							oldPhoto:setRawMetadata("pickStatus", 0)
 						end
 						oldPhoto:removeKeyword(keywordObj)
 					end
-				end			
+				end
 			end)
-	  	end
-	  	
-	  	-- construct the array for the sorting
+		end
+
+		-- construct the array for the sorting
 		local sortingArray = {}
-		
+
 		if settings.useFlag or settings.useLabels then
 			local sortingTable = {}
 			local pos
@@ -672,24 +701,23 @@ function Teekesselchen.new(context)
 				table.insert(auxArray, n)
 			end
 			table.sort(auxArray)
-			
-			for i,v in ipairs(auxArray) do
+
+			for i, v in ipairs(auxArray) do
 				table.insert(sortingArray, sortingTable[v])
 			end
-			
 		end
-	  	
-	  	-- build the comparator chain
-	  	local act = markDuplicateEnv(settings, keywordObj, sortingArray)
-	  	if settings.useExifTool then
-	  		act = exifToolEnv(getExifToolData(settings), act)
-	  		if doLog then
+
+		-- build the comparator chain
+		local act = markDuplicateEnv(settings, keywordObj, sortingArray)
+		if settings.useExifTool then
+			act = exifToolEnv(getExifToolData(settings), act)
+			if doLog then
 				logger:debug("findDuplicates: using exifTool")
 			end
-	  	end
-	  	if settings.useCaptureDate then
-	  		local iE = settings.ignoreEmptyCaptureDate
-	  		if settings.useScanDate then
+		end
+		if settings.useCaptureDate then
+			local iE = settings.ignoreEmptyCaptureDate
+			if settings.useScanDate then
 				act = comperatorCaptureTime(act, iE)
 				if doLog then
 					logger:debug("findDuplicates: using dateTimeOriginal and dateTimeDigitized")
@@ -761,96 +789,97 @@ function Teekesselchen.new(context)
 				logger:debug("findDuplicates: using exposureBias")
 			end
 		end
-		
+
 		if settings.useFileName then
 			act = comperatorEnv("fileName", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using fileName")
 			end
 		end
-		
+
 		if settings.useFileSize then
 			act = comperatorEnv("fileSize", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using fileSize")
 			end
 		end
-		
+
 		if settings.useFileType then
 			act = comperatorEnv("fileType", act, false)
 			if doLog then
 				logger:debug("findDuplicates: using fileType")
 			end
 		end
-  	
-  		-- provide a keyword object in current settings
-  	
-  		local tree = {}
-	  	local photo
-  		local skip
-  		
-  		-- local progressScope = LrProgressScope( {title = 'Looking for duplicates ...', functionContext = context, } )
-		local progressScope = LrDialogs.showModalProgressDialog({title = 'Looking for duplicates ...', functionContext = context, } )
-		local captionTail = " (total: " .. self.total ..")"
-  		-- now iterate over all selected photos
-		
+
+		-- provide a keyword object in current settings
+
+		local tree = {}
+		local photo
+		local skip
+
+		-- local progressScope = LrProgressScope( {title = 'Looking for duplicates ...', functionContext = context, } )
+		local progressScope =
+			LrDialogs.showModalProgressDialog({ title = "Looking for duplicates ...", functionContext = context })
+		local captionTail = " (total: " .. self.total .. ")"
+		-- now iterate over all selected photos
+
 		local skipCounter = 0
 		local duplicateCounter = 0
 
-  		catalog:withWriteAccessDo("findDuplicates", function()
-  			for i=1,self.total do
-  				-- do the interface stuff at the beginning
-  				if progressScope:isCanceled() then
-	  				break
-  				end
-  				progressScope:setPortionComplete(i, self.total)
-  				progressScope:setCaption("Checking photo #" .. i .. captionTail)
- 	 			LrTasks.yield()
-  				-- select the current photo
-  				photo = photos[i]
-  				if doLog then
-  					logger:debugf("Processing photo %s (#%i)", photo:getFormattedMetadata("fileName"), i)
-  				end
-	  			skip = false
-		  		-- skip virtual copies and videos
-		  		if (ignoreVirtualCopies and photo:getRawMetadata("isVirtualCopy")) or
-  					photo:getRawMetadata("isVideo") then
-  					skip = true
-	  			else
-				-- skip photos with selected keywords, if provided
-				if ignoreKeywords then
-					for j,keyword in ipairs(photo:getRawMetadata("keywords")) do
-						if ignoreList[keyword:getName()] then
-							skip = true
-							break
+		catalog:withWriteAccessDo("findDuplicates", function()
+			for i = 1, self.total do
+				-- do the interface stuff at the beginning
+				if progressScope:isCanceled() then
+					break
+				end
+				progressScope:setPortionComplete(i, self.total)
+				progressScope:setCaption("Checking photo #" .. i .. captionTail)
+				LrTasks.yield()
+				-- select the current photo
+				photo = photos[i]
+				if doLog then
+					logger:debugf("Processing photo %s (#%i)", photo:getFormattedMetadata("fileName"), i)
+				end
+				skip = false
+				-- skip virtual copies and videos
+				if
+					(ignoreVirtualCopies and photo:getRawMetadata("isVirtualCopy"))
+					or photo:getRawMetadata("isVideo")
+				then
+					skip = true
+				else
+					-- skip photos with selected keywords, if provided
+					if ignoreKeywords then
+						for j, keyword in ipairs(photo:getRawMetadata("keywords")) do
+							if ignoreList[keyword:getName()] then
+								skip = true
+								break
+							end
 						end
 					end
 				end
-			end
-			if skip then
-				local copyName = photo:getFormattedMetadata("copyName")
-				local fileName = photo:getFormattedMetadata("fileName")
-				if doLog then
-					if copyName then
-						logger:debugf(" Skipping %s (Copy %s)", fileName, copyName)
-					else
-						logger:debugf(" Skipping %s", fileName)
+				if skip then
+					local copyName = photo:getFormattedMetadata("copyName")
+					local fileName = photo:getFormattedMetadata("fileName")
+					if doLog then
+						if copyName then
+							logger:debugf(" Skipping %s (Copy %s)", fileName, copyName)
+						else
+							logger:debugf(" Skipping %s", fileName)
+						end
+					end
+					skipCounter = skipCounter + 1
+				else
+					if act(tree, photo) then
+						duplicateCounter = duplicateCounter + 1
 					end
 				end
-				skipCounter = skipCounter + 1
-			else
-				if act(tree, photo) then
-					duplicateCounter = duplicateCounter + 1
-				end
 			end
-		end
-	end)
+		end)
 		progressScope:done()
 		self.found = duplicateCounter
 		self.skipped = skipCounter
 	end
-	
 
 	return self
 end
-

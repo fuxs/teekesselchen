@@ -22,33 +22,60 @@ Util.lua
 
 ------------------------------------------------------------------------------]]
 
-local LrPathUtils = import "LrPathUtils"
+local LrPathUtils = import("LrPathUtils")
 
-local alphas = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"}
+local alphas = {
+	"a",
+	"b",
+	"c",
+	"d",
+	"e",
+	"f",
+	"g",
+	"h",
+	"i",
+	"j",
+	"k",
+	"l",
+	"m",
+	"n",
+	"o",
+	"p",
+	"q",
+	"r",
+	"s",
+	"t",
+	"u",
+	"v",
+	"w",
+	"x",
+	"y",
+	"z",
+}
 
 Util = {}
 
-function Util.numToAlpha(num)	
+function Util.numToAlpha(num)
 	local result = ""
 	while num > 0 do
-		result = alphas[math.fmod(num,26) + 1] .. result
+		result = alphas[math.fmod(num, 26) + 1] .. result
 		num = math.floor(num / 26)
 	end
 	return result
 end
 
-function Util.startsWith(str,start)
-   return string.sub(str,1,string.len(start))==start
+function Util.startsWith(str, start)
+	return string.sub(str, 1, string.len(start)) == start
 end
 
-function Util.endsWith(str,ende)
-   return ende=='' or string.sub(str,-string.len(ende))==ende
+function Util.endsWith(str, ende)
+	return ende == "" or string.sub(str, -string.len(ende)) == ende
 end
 
 --[[
 	Removes initial and trailing whitespaces
 ]]
-function Util.trim(str)	
+function Util.trim(str)
 	return string.match(str, "^%s*(.-)%s*$")
 end
 
@@ -59,7 +86,7 @@ function Util.split(str)
 	local result = {}
 	if str then
 		for token in string.gmatch(str, "[^,]+") do
-  			table.insert(result, Util.trim(token))
+			table.insert(result, Util.trim(token))
 		end
 	end
 	return result
@@ -70,29 +97,28 @@ end
 	d: string, the glue
 	p: table
 ]]
-function Util.implode(d,p)
+function Util.implode(d, p)
 	local result
-  	result = ""
-  	if(#p == 1) then
-    	return p[1]
-  	end
-  	for i=1, (#p-1) do
-    	result = result .. p[i] .. d
-  	end
-  	result = result .. p[#p]
+	result = ""
+	if #p == 1 then
+		return p[1]
+	end
+	for i = 1, (#p - 1) do
+		result = result .. p[i] .. d
+	end
+	result = result .. p[#p]
 	return result
 end
 
 function Util.getExifToolCmd(parameters)
 	if WIN_ENV then
-		return '"' .. LrPathUtils.child( _PLUGIN.path, "exiftool.exe") .. '" ' .. parameters
+		return '"' .. LrPathUtils.child(_PLUGIN.path, "exiftool.exe") .. '" ' .. parameters
 	else
 		-- must be mac
-		return "'" .. LrPathUtils.child( _PLUGIN.path, "exiftool") .. "' " .. parameters
+		return "'" .. LrPathUtils.child(_PLUGIN.path, "exiftool") .. "' " .. parameters
 	end
-	
 end
 
 function Util.getTempPath(name)
-	return LrPathUtils.child( LrPathUtils.getStandardFilePath("temp"), name)
+	return LrPathUtils.child(LrPathUtils.getStandardFilePath("temp"), name)
 end

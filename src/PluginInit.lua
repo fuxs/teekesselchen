@@ -22,14 +22,14 @@ PluginInit.lua
 
 ------------------------------------------------------------------------------]]
 
-local LrPrefs = import "LrPrefs"
-local LrDialogs = import "LrDialogs"
-local LrTasks = import "LrTasks"
-local LrHttp = import "LrHttp"
-local LrLogger = import "LrLogger"
+local LrPrefs = import("LrPrefs")
+local LrDialogs = import("LrDialogs")
+local LrTasks = import("LrTasks")
+local LrHttp = import("LrHttp")
+local LrLogger = import("LrLogger")
 
-require "Configuration"
-require "Updater"
+require("Configuration")
+require("Updater")
 
 _G.CURRENT_VERSION = 1.9
 _G.configuration = Configuration.new()
@@ -45,7 +45,11 @@ if settings.checkForUpdates then
 		local u = Updater.new()
 		if u.getInfo() then
 			if u.getVersion() > _G.CURRENT_VERSION then
-				local result = LrDialogs.confirm("A new versions is available (" .. u.getVersionStr() .. ")", "Select Update to open info in browser", "Update")
+				local result = LrDialogs.confirm(
+					"A new versions is available (" .. u.getVersionStr() .. ")",
+					"Select Update to open info in browser",
+					"Update"
+				)
 				if result == "ok" then
 					LrHttp.openUrlInBrowser(u.getUrl())
 				end

@@ -28,10 +28,10 @@ return {
 	metadataFieldsForPhotos = {
 		{
 			id = "duplicate_uuid",
-			title = LOC "$$$/Teekesselchen/Field=Duplicate ID",
+			title = LOC("$$$/Teekesselchen/Field=Duplicate ID"),
 			dataType = "string",
-			readOnly=false,
-			searchable = true
+			readOnly = false,
+			searchable = true,
 		},
 	},
 	schemaVersion = 3,
