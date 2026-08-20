@@ -1,0 +1,31 @@
+---
+# Custom selene standard library describing the Adobe Lightroom SDK Lua environment.
+# Referenced by selene.toml as std = "lua51+lightroom".
+base: lua51
+name: lightroom
+globals:
+  # Lightroom SDK entry points
+  import:
+    args:
+      - type: string
+  LOC:
+    args:
+      - type: string
+      - type: "..."
+        required: false
+  _PLUGIN:
+    any: true
+  WIN_ENV:
+    property: read-only
+  MAC_ENV:
+    property: read-only
+  # Teekesselchen's own cross-file globals (modules are loaded via `require`
+  # and register themselves as globals instead of returning tables)
+  Util:
+    any: true
+  Configuration:
+    any: true
+  Teekesselchen:
+    any: true
+  Updater:
+    any: true

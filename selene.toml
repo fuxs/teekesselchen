@@ -1,0 +1,11 @@
+# Selene linter configuration — https://kampfkarren.github.io/selene/
+# Lint with: selene src
+std = "lua51+lightroom"
+
+[lints]
+# The codebase predates the linter; keep unused_variable as a warning, not an error.
+unused_variable = "warn"
+# LrView UI tables idiomatically mix named properties and positional children.
+mixed_table = "allow"
+# Compact one-liners like `if x == nil then x = 0 end` are fine.
+multiple_statements = "allow"

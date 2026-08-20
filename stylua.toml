@@ -1,0 +1,9 @@
+# StyLua configuration — https://github.com/JohnnyMorganz/StyLua
+# Matches the existing code style: tabs, double quotes.
+syntax = "Lua51"          # Lightroom's Lua runtime is 5.1
+column_width = 120
+line_endings = "Unix"
+indent_type = "Tabs"
+indent_width = 4
+quote_style = "AutoPreferDouble"
+call_parentheses = "Always"

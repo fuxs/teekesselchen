@@ -4,7 +4,16 @@ DIST=dist
 $(BUILD):
 	@mkdir $(BUILD)
 
-.PHONY: build distribution
+.PHONY: build distribution lint fmt
+
+lint:
+	selene src
+
+fmt:
+	stylua src
+
+fmt-check:
+	stylua --check src
 
 build: $(shell find src -type f) $(BUILD)
 	cp -a src/* $(BUILD)
