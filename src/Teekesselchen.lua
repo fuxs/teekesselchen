@@ -83,53 +83,32 @@ local function insertFlaggedPhoto(tree, photo, flag, label)
 	table.insert(tree, photo)
 end
 
-local function preferRAW(tree, photo, flag, label)
-	local header = tree[2]
-	local headMatch = header:getRawMetadata("fileFormat") == "RAW"
-	local photoMatch = photo:getRawMetadata("fileFormat") == "RAW"
-	if headMatch then
-		insertFlaggedPhoto(tree, photo, flag, label)
-		return true
-	else
-		if photoMatch then
+--[[
+	Returns a prefer rule that keeps the photo with the given file format
+	(e.g. "RAW", "DNG", "HEIC"). When both photos or neither photo has the
+	format, the rule does not decide (returns false) so that the next rule
+	in the sorting order can break the tie.
+]]
+function Teekesselchen.preferFormat(format)
+	return function(tree, photo, flag, label)
+		local header = tree[2]
+		local headMatch = header:getRawMetadata("fileFormat") == format
+		local photoMatch = photo:getRawMetadata("fileFormat") == format
+		if headMatch and not photoMatch then
+			insertFlaggedPhoto(tree, photo, flag, label)
+			return true
+		end
+		if photoMatch and not headMatch then
 			changeOrder(tree, photo, flag, label)
 			return true
 		end
+		return false
 	end
-	return false
 end
 
-local function preferDNG(tree, photo, flag, label)
-	local header = tree[2]
-	local headMatch = header:getRawMetadata("fileFormat") == "DNG" --@mno since I do not use RAW but DNG this works for me.
-	local photoMatch = photo:getRawMetadata("fileFormat") == "DNG" --@mno more elegant would be to check for both values.
-	if headMatch then
-		insertFlaggedPhoto(tree, photo, flag, label)
-		return true
-	else
-		if photoMatch then
-			changeOrder(tree, photo, flag, label)
-			return true
-		end
-	end
-	return false
-end
-
-local function preferHEIC(tree, photo, flag, label)
-	local header = tree[2]
-	local headMatch = header:getRawMetadata("fileFormat") == "HEIC"
-	local photoMatch = photo:getRawMetadata("fileFormat") == "HEIC"
-	if headMatch then
-		insertFlaggedPhoto(tree, photo, flag, label)
-		return true
-	else
-		if photoMatch then
-			changeOrder(tree, photo, flag, label)
-			return true
-		end
-	end
-	return false
-end
+local preferRAW = Teekesselchen.preferFormat("RAW")
+local preferDNG = Teekesselchen.preferFormat("DNG")
+local preferHEIC = Teekesselchen.preferFormat("HEIC")
 
 local function preferLarge(tree, photo, flag, label)
 	local header = tree[2]
@@ -421,13 +400,20 @@ local function exifToolEnv(exifTool, marker)
 	end
 end
 
-local function comperatorEnv(name, comp, mandatory)
+function Teekesselchen.comperatorEnv(name, comp, mandatory)
 	local nameStr = "~" .. name .. "#"
 	return function(tree, photo)
-		local value = photo:getFormattedMetadata(name)
-		-- compare file names without their extension, so IMG_1.heic and IMG_1.jpg match
-		if name == "fileName" and value then
-			value = Util.baseName(value)
+		local value
+		if name == "fileSize" then
+			-- the formatted file size is a rounded string like "24.6 MB";
+			-- compare the exact number of bytes instead (PR #18)
+			value = photo:getRawMetadata(name)
+		else
+			value = photo:getFormattedMetadata(name)
+			-- compare file names without their extension, so IMG_1.heic and IMG_1.jpg match
+			if name == "fileName" and value then
+				value = Util.baseName(value)
+			end
 		end
 		-- nil is not a valid key, thus, we take a dummy value
 		if not value then
@@ -448,6 +434,8 @@ local function comperatorEnv(name, comp, mandatory)
 		return comp(sub, photo)
 	end
 end
+
+local comperatorEnv = Teekesselchen.comperatorEnv
 
 local function comperatorCaptureTime(comp, mandatory)
 	return function(tree, photo)

@@ -4,9 +4,17 @@
 ]]
 
 -- Stub the Lightroom SDK: `import` returns a table that errors on first use,
--- so tests fail loudly if code under test reaches into the SDK.
+-- so tests fail loudly if code under test reaches into the SDK. Individual
+-- calls needed at module load time get real stub implementations.
+local sdkOverrides = {
+	LrApplication = {
+		versionTable = function()
+			return { major = 13, minor = 0 }
+		end,
+	},
+}
 local function sdkStub(name)
-	return setmetatable({}, {
+	return setmetatable(sdkOverrides[name] or {}, {
 		__index = function(_, key)
 			error("Lightroom SDK not available in tests: " .. name .. "." .. key)
 		end,
@@ -23,6 +31,7 @@ package.path = "src/?.lua;" .. package.path
 
 require("Util")
 require("Updater")
+require("Teekesselchen")
 
 local failures = 0
 local count = 0
@@ -112,6 +121,111 @@ is("isNewer: 1.9.0 equals 1.9", call(Updater.isNewer, "1.9.0", "1.9"), false)
 is("isNewer: 1.8 is older than 1.9", call(Updater.isNewer, "1.8", "1.9"), false)
 is("isNewer: nil is not newer", call(Updater.isNewer, nil, "1.9"), false)
 is("isNewer: garbage is not newer", call(Updater.isNewer, "garbage", "1.9"), false)
+
+--
+-- Teekesselchen.preferFormat: one factory for the RAW/DNG/HEIC prefer rules.
+-- A duplicate group is {labelNumber, headPhoto, ...}; the rule must keep a
+-- matching head (true), promote a matching photo (true), and — the bug from
+-- PR #2 — fall through (false) when both or neither match, so the next rule
+-- (rating, size, ...) can break the tie.
+--
+local function fakePhoto(fields)
+	return {
+		getRawMetadata = function(_self, key)
+			return fields[key]
+		end,
+		setRawMetadata = function(_self, key, v)
+			fields[key] = v
+		end,
+	}
+end
+
+local function preferFormatCase(headFormat, photoFormat)
+	local head = fakePhoto({ fileFormat = headFormat })
+	local photo = fakePhoto({ fileFormat = photoFormat })
+	local tree = { 0, head }
+	local ok, rule = pcall(Teekesselchen.preferFormat, "RAW")
+	if not ok or type(rule) ~= "function" then
+		return "<no factory>", tree, head, photo
+	end
+	local decided = rule(tree, photo, false, false)
+	return decided, tree, head, photo
+end
+
+local decided, tree, head = preferFormatCase("RAW", "JPG")
+is("preferFormat keeps a matching head", decided, true)
+is("preferFormat keeps a matching head: head unchanged", tree[2], head)
+
+local decided2, tree2, _, photo2 = preferFormatCase("JPG", "RAW")
+is("preferFormat promotes a matching photo", decided2, true)
+is("preferFormat promotes a matching photo: new head", tree2[2], photo2)
+
+local decided3, tree3, head3 = preferFormatCase("RAW", "RAW")
+is("preferFormat falls through when both match (tie)", decided3, false)
+is("preferFormat tie leaves the group unchanged", tree3[2] == head3 and #tree3 == 2, true)
+
+local decided4 = preferFormatCase("JPG", "JPG")
+is("preferFormat falls through when neither matches", decided4, false)
+
+--
+-- Teekesselchen.comperatorEnv: groups photos by a metadata value.
+-- File size must compare raw bytes (PR #18): the formatted value is a
+-- rounded string like "24.6 MB", which falsely groups different files.
+--
+local function fakeMetaPhoto(raw, formatted)
+	return {
+		getRawMetadata = function(_self, key)
+			return raw[key]
+		end,
+		getFormattedMetadata = function(_self, key)
+			return formatted[key]
+		end,
+	}
+end
+
+-- stand-in for the innermost marker: groups photos, reports duplicates
+local function countingMarker(sub, photo)
+	table.insert(sub, photo)
+	return #sub > 1
+end
+
+local function runComparator(name, photos)
+	local ok, comp = pcall(Teekesselchen.comperatorEnv, name, countingMarker, false)
+	if not ok or comp == nil then
+		return "<no comperatorEnv>"
+	end
+	local groups = {}
+	local lastResult
+	for _, photo in ipairs(photos) do
+		lastResult = comp(groups, photo)
+	end
+	return lastResult
+end
+
+is(
+	"comperatorEnv fileSize: same rounded MB but different bytes do not group",
+	runComparator("fileSize", {
+		fakeMetaPhoto({ fileSize = 25800000 }, { fileSize = "24.6 MB" }),
+		fakeMetaPhoto({ fileSize = 25900000 }, { fileSize = "24.6 MB" }),
+	}),
+	false
+)
+is(
+	"comperatorEnv fileSize: identical byte sizes group",
+	runComparator("fileSize", {
+		fakeMetaPhoto({ fileSize = 25800000 }, { fileSize = "24.6 MB" }),
+		fakeMetaPhoto({ fileSize = 25800000 }, { fileSize = "24.6 MB" }),
+	}),
+	true
+)
+is(
+	"comperatorEnv fileName: extension is ignored (HEIC/JPG twins group)",
+	runComparator("fileName", {
+		fakeMetaPhoto({}, { fileName = "IMG_0001.heic" }),
+		fakeMetaPhoto({}, { fileName = "IMG_0001.jpg" }),
+	}),
+	true
+)
 
 print(string.format("\n%d tests, %d failures", count, failures))
 os.exit(failures == 0 and 0 or 1)
